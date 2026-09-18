@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Copie Flash</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Copie Flash">
+<meta name="theme-color" content="#e8792b">
+<style>
+  :root {
+    --bg: #fbf5e9; --paper: #ffffff; --ink: #2c2a26; --muted: #7c766c;
+    --accent: #e8792b; --accent2: #2f8f83; --danger: #d23f3f; --ok: #3a9a5b;
+    --line: #e6dfd0; --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Adwaita Sans", "Nimbus Sans", "Liberation Sans", system-ui, sans-serif;
+    font-size: 18px; line-height: 1.4; padding: 0 24px;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+  }
+  button { touch-action: manipulation; }
+  .screen { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column; }
+  .screen.on { display: flex; }
+  h1 { font-size: 44px; margin: 0 0 6px; letter-spacing: -0.5px; }
+  .sub { color: var(--muted); margin: 0 0 32px; }
+  .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .wrap { max-width: 900px; width: 100%; margin: 0 auto; padding-block: 40px; }
+
+  /* Choix */
+  .choice { margin-bottom: 26px; }
+  .choice label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--muted); text-transform: uppercase; font-size: 13px; letter-spacing: .08em; }
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    border: 2px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: 12px 22px; border-radius: 999px; font-size: 19px; cursor: pointer; font-weight: 600;
+    transition: all .12s;
+  }
+  .pill:hover { border-color: var(--accent); }
+  .pill.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pill.big { padding: 18px 26px; font-size: 21px; text-align: left; border-radius: var(--radius); flex: 1 1 260px; }
+  .pill.big small { display: block; font-weight: 400; font-size: 15px; opacity: .8; margin-top: 4px; }
+  .btn {
+    border: 0; background: var(--accent2); color: #fff; font-size: 22px; font-weight: 700;
+    padding: 18px 36px; border-radius: 999px; cursor: pointer; box-shadow: 0 4px 0 #22665e;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #22665e; }
+  .btn.ghost { background: transparent; color: var(--accent2); box-shadow: none; border: 2px solid var(--accent2); }
+  .btn.small { font-size: 16px; padding: 10px 20px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+
+  /* Session */
+  #session { position: relative; }
+  .hud { position: absolute; top: 18px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-weight: 600; font-size: 20px; }
+  .hud .chrono { font-variant-numeric: tabular-nums; }
+  .word { font-weight: 700; letter-spacing: .01em; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
+  .bar { height: 10px; width: min(600px, 80vw); background: var(--line); border-radius: 99px; margin-top: 36px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 100%; transform-origin: left; }
+  .bar.run > i { animation: shrink 3s linear forwards; }
+  @keyframes shrink { from { transform: scaleX(1);} to { transform: scaleX(0);} }
+  .hint { color: var(--muted); font-size: 22px; margin-top: 40px; }
+  .hint kbd { background: var(--paper); border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-family: inherit; color: var(--ink); }
+  .pencil { font-size: 120px; line-height: 1; }
+  .dots { display: flex; gap: 8px; justify-content: center; margin-top: 30px; }
+  .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .dots i.done { background: var(--accent2); }
+  .dots i.cur { background: var(--accent); transform: scale(1.3); }
+  .hud .stop { border: 0; background: transparent; color: var(--muted); font-size: 22px; padding: 4px 10px; cursor: pointer; margin-left: 14px; }
+  .touch { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; min-height: 70px; visibility: hidden; }
+  .touch.on { visibility: visible; }
+  .touch .btn { min-width: 150px; white-space: nowrap; }
+  .touch .btn.again { background: var(--accent); box-shadow: 0 4px 0 #b55a1c; }
+  @media (hover: none) { .hint { display: none; } }
+
+  /* Review */
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
+  .item {
+    background: var(--paper); border: 2px solid var(--line); border-radius: 14px; padding: 14px 18px;
+    font-size: 26px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  }
+  .item span.n { color: var(--muted); font-size: 15px; font-weight: 400; }
+  .item.bad { border-color: var(--danger); background: #fff1f1; color: var(--danger); text-decoration: line-through; }
+  .item.bad span.n { color: var(--danger); }
+
+  /* Résumé */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 20px 0; width: 100%; }
+  .card { background: var(--paper); border: 2px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .card b { display: block; font-size: 38px; line-height: 1; }
+  .card span { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: .06em; }
+  .msg { font-size: 30px; font-weight: 700; margin-top: 10px; }
+  .msg.record { color: var(--accent); }
+  .note { color: var(--muted); font-size: 16px; }
+
+  /* Célébration */
+  .bigemoji { font-size: 110px; line-height: 1; animation: pop .7s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes pop { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.25) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+  .bounce { animation: bounce 1.2s ease-in-out .8s infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+  .ref { position: fixed; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 11px; color: #b5ad9f; }
+
+  /* Stats */
+  table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 12px; overflow: hidden; font-size: 15px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: #f3ecdc; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  tr.s { cursor: pointer; }
+  tr.s:hover td { background: #fbf8f0; }
+  tr.d td { background: #fbf8f0; padding: 0 12px 14px; white-space: normal; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; }
+  .chip { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 14px; }
+  .chip.bad { border-color: var(--danger); color: var(--danger); }
+  .tablewrap { overflow-x: auto; }
+  .del { border: 0; background: transparent; cursor: pointer; font-size: 16px; opacity: .35; padding: 2px 6px; border-radius: 6px; }
+  .del:hover { opacity: 1; background: #fde8e8; }
+  code { background: var(--paper); padding: 2px 6px; border-radius: 6px; }
+
+  /* Petits écrans (iPhone) */
+  @media (max-width: 640px) {
+    body { font-size: 16px; padding: 0 16px; }
+    .wrap { padding-block: 24px; }
+    h1 { font-size: 30px; } .sub { margin-bottom: 20px; }
+    .choice { margin-bottom: 18px; }
+    .pill { padding: 10px 16px; font-size: 17px; }
+    .pill.big { flex-basis: 100%; padding: 14px 18px; font-size: 18px; } .pill.big small { font-size: 14px; }
+    .btn { font-size: 19px; padding: 14px 26px; }
+    .hud { top: 10px; font-size: 15px; }
+    .pencil { font-size: 80px; } .hint { font-size: 17px; margin-top: 24px; }
+    .bar { margin-top: 24px; }
+    .touch .btn { min-width: 0; flex: 1 1 130px; }
+    .list { grid-template-columns: 1fr 1fr; gap: 8px; } .item { font-size: 20px; padding: 10px 12px; }
+    .cards { grid-template-columns: 1fr 1fr; gap: 10px; } .card b { font-size: 28px; }
+    .msg { font-size: 22px; } .bigemoji { font-size: 80px; }
+    table { font-size: 13px; } th, td { padding: 8px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ACCUEIL -->
+<section id="home" class="screen">
+  <div class="wrap">
+    <h1>✏️ Copie Flash</h1>
+    <p class="sub">Regarde le mot, il disparaît, tu l'écris en attaché. Prête ?</p>
+
+    <div class="choice"><label>Mode</label>
+      <div class="pills" id="modes">
+        <button class="pill big sel" data-v="cachee">🙈 Copie cachée<small>Le mot disparaît après 3 s. Tu peux le revoir si besoin.</small></button>
+        <button class="pill big" data-v="flash">⚡ Copie flash<small>Le mot disparaît après 3 s, impossible de le revoir.</small></button>
+      </div>
+    </div>
+    <div class="choice"><label>Niveau</label><div class="pills" id="niveaux"></div></div>
+    <div class="choice"><label>Nombre de mots</label>
+      <div class="pills" id="nbs">
+        <button class="pill sel" data-v="5">5</button><button class="pill" data-v="10">10</button>
+        <button class="pill" data-v="15">15</button><button class="pill" data-v="20">20</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="go">C'est parti !</button>
+      <button class="btn ghost" id="toStats">📊 Statistiques</button>
+    </div>
+  </div>
+</section>
+
+<!-- SESSION -->
+<section id="session" class="screen">
+  <div class="hud"><span id="hudPos"></span><span><span class="chrono" id="hudChrono">0:00</span><button class="stop" id="stopBtn" title="Arrêter">✕</button></span></div>
+  <div class="center">
+    <div id="stage"></div>
+    <div class="bar" id="bar"><i></i></div>
+    <div class="hint" id="hint"></div>
+    <div class="touch" id="touch"><button class="btn again" id="tRevoir">👀 Revoir</button><button class="btn" id="tSuivant">✅ Suivant</button></div>
+    <div class="dots" id="dots"></div>
+  </div>
+</section>
+
+<!-- CORRECTION -->
+<section id="review" class="screen">
+  <div class="wrap">
+    <h1>Bravo, c'est fini ! 🎉</h1>
+    <p class="sub">Compare avec ton cahier. Touche un mot s'il a une faute.</p>
+    <div class="list" id="reviewList"></div>
+    <div class="row">
+      <button class="btn" id="saveBtn">Enregistrer</button>
+      <span class="note" id="reviewCount"></span>
+    </div>
+  </div>
+</section>
+
+<!-- RÉSUMÉ -->
+<section id="summary" class="screen">
+  <div class="wrap center">
+    <div class="bigemoji" id="sumEmoji"></div>
+    <div class="msg" id="sumMsg"></div>
+    <p class="note" id="sumSub"></p>
+    <div class="cards" id="sumCards"></div>
+    <div class="row">
+      <button class="btn" id="again">Encore une !</button>
+      <button class="btn ghost" id="sumHome">Accueil</button>
+      <button class="btn ghost" id="sumStats">📊 Statistiques</button>
+    </div>
+  </div>
+  <div class="ref" id="sumRef"></div>
+</section>
+
+<!-- STATS -->
+<section id="stats" class="screen">
+  <div class="wrap">
+    <h1>📊 Statistiques</h1>
+    <p class="sub">Toutes les sessions. Clique sur une ligne pour voir le détail mot par mot.
+      Fichiers : <code id="csvPath"></code> <button class="btn small ghost" id="openFolder">Ouvrir le dossier</button></p>
+    <div class="row" style="margin:0 0 16px">
+      <button class="btn ghost small" id="statsHome">← Accueil</button>
+      <span class="note" id="statsSummary"></span>
+    </div>
+    <div class="tablewrap"><table id="statsTable"></table></div>
+  </div>
+</section>
+
+<script src="mots.js"></script>
+<script src="store.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const SHOW_MS = 3000, PAUSE_MS = 1000;
+const state = { mode: "cachee", niveau: "CE1", nb: 5 };
+let S = null; // session en cours
+
+function show(id) { document.querySelectorAll(".screen").forEach(e => e.classList.remove("on")); $("#"+id).classList.add("on"); }
+function lettres(w) { return (w.match(/\p{L}/gu) || []).length; }
+function fmt(s) { s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+function fmt1(x) { return (Math.round(x*10)/10).toLocaleString("fr-FR"); }
+
+// ---- Accueil ----
+function pills(sel, key, values, init) {
+  const box = $(sel);
+  if (values) box.innerHTML = values.map(v => `<button class="pill${v===init?" sel":""}" data-v="${v}">${v}</button>`).join("");
+  box.addEventListener("click", e => {
+    const b = e.target.closest(".pill"); if (!b) return;
+    box.querySelectorAll(".pill").forEach(p => p.classList.remove("sel")); b.classList.add("sel");
+    state[key] = key === "nb" ? +b.dataset.v : b.dataset.v;
+  });
+}
+pills("#modes", "mode"); pills("#nbs", "nb");
+pills("#niveaux", "niveau", NIVEAUX, state.niveau);
+$("#go").onclick = startSession;
+$("#toStats").onclick = showStats; $("#sumStats").onclick = showStats;
+$("#statsHome").onclick = () => show("home"); $("#sumHome").onclick = () => show("home");
+$("#again").onclick = startSession;
+
+// ---- Tirage des mots (évite ceux de la session précédente de ce niveau) ----
+function pickWords(niveau, n) {
+  let last = [];
+  try { last = JSON.parse(localStorage.getItem("last_"+niveau) || "[]"); } catch {}
+  const pool = MOTS[niveau].filter(w => !last.includes(w));
+  const src = pool.length >= n ? pool : MOTS[niveau].slice();
+  for (let i = src.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [src[i], src[j]] = [src[j], src[i]]; }
+  const words = src.slice(0, n);
+  try { localStorage.setItem("last_"+niveau, JSON.stringify(words)); } catch {}
+  return words;
+}
+
+// ---- Session ----
+let timers = [], chronoTimer = null;
+function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+function startSession() {
+  S = {
+    mode: state.mode, niveau: state.niveau, nb: state.nb,
+    words: pickWords(state.niveau, state.nb).map(w => ({ mot: w, lettres: lettres(w), revoirs: 0, hiddenAt: null, duree: 0, faute: false })),
+    i: 0, phase: "pause", start: null, end: null, revoirs: 0, dateStart: new Date()
+  };
+  show("session");
+  $("#hudChrono").textContent = "0:00";
+  $("#dots").innerHTML = S.words.map(() => "<i></i>").join("");
+  stage(`<div class="pencil">✏️</div><div class="hint">Prends ton stylo…</div>`);
+  $("#bar").style.visibility = "hidden"; $("#hint").textContent = ""; touch(false);
+  updateHud();
+  later(() => showWord(false), 2000);
+}
+
+function stage(html) { $("#stage").innerHTML = html; }
+function updateHud() {
+  $("#hudPos").textContent = `Mot ${Math.min(S.i+1, S.nb)} / ${S.nb} · ${S.niveau}`;
+  [...$("#dots").children].forEach((d, k) => { d.className = k < S.i ? "done" : k === S.i ? "cur" : ""; });
+}
+function fitSize(w) {
+  const max = Math.min(180, window.innerHeight * 0.3);
+  return Math.max(40, Math.min(max, (window.innerWidth * 0.88) / (w.length * 0.62))) + "px";
+}
+
+function showWord(again) {
+  const w = S.words[S.i];
+  S.phase = "showing";
+  stage(`<div class="word" style="font-size:${fitSize(w.mot)}">${w.mot}</div>`);
+  $("#hint").textContent = again ? "Regarde bien…" : ""; touch(false);
+  const bar = $("#bar"); bar.style.visibility = "visible"; bar.classList.remove("run"); void bar.offsetWidth; bar.classList.add("run");
+  updateHud();
+  later(hideWord, SHOW_MS);
+}
+
+function hideWord() {
+  const w = S.words[S.i];
+  S.phase = "hidden";
+  const now = performance.now();
+  if (w.hiddenAt === null) w.hiddenAt = now;
+  if (S.start === null) { S.start = now; chronoTimer = setInterval(() => { $("#hudChrono").textContent = fmt((performance.now()-S.start)/1000); }, 500); }
+  $("#bar").style.visibility = "hidden";
+  stage(`<div class="pencil">✍️</div>`);
+  $("#hint").innerHTML = S.mode === "cachee"
+    ? `<kbd>Espace</kbd> revoir le mot &nbsp;&nbsp; <kbd>Entrée</kbd> mot suivant`
+    : `<kbd>Espace</kbd> quand tu as fini d'écrire`;
+  touch(true);
+}
+// Boutons tactiles (iPhone / trackpad) : mêmes actions que les touches.
+function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode !== "cachee"; }
+function revoir() { if (S && S.phase === "hidden" && S.mode === "cachee") { S.words[S.i].revoirs++; S.revoirs++; showWord(true); } }
+function suivant() { if (S && S.phase === "hidden") validate(); }
+function stop() { if (S && confirm("Arrêter la session ?")) { clearTimers(); clearInterval(chronoTimer); S = null; show("home"); } }
+$("#tRevoir").onclick = revoir; $("#tSuivant").onclick = suivant; $("#stopBtn").onclick = stop;
+
+function validate() {
+  const w = S.words[S.i];
+  w.duree = (performance.now() - w.hiddenAt) / 1000;
+  S.i++;
+  if (S.i < S.nb) {
+    S.phase = "pause";
+    stage(""); $("#hint").textContent = ""; touch(false); updateHud();
+    later(() => showWord(false), PAUSE_MS);
+  } else {
+    S.end = performance.now(); S.phase = "done";
+    clearInterval(chronoTimer);
+    review();
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (!$("#session").classList.contains("on") || !S) return;
+  if (e.key === "Escape") { stop(); return; }
+  if (e.key !== " " && e.key !== "Enter") return;
+  e.preventDefault();
+  if (e.key === " " && S.mode === "cachee") revoir(); else suivant();
+});
+
+// ---- Correction ----
+function review() {
+  show("review");
+  const list = $("#reviewList");
+  list.innerHTML = S.words.map((w, k) => `<div class="item" data-k="${k}"><span>${w.mot}</span><span class="n">${w.lettres} l.</span></div>`).join("");
+  list.onclick = e => {
+    const it = e.target.closest(".item"); if (!it) return;
+    const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
+    reviewCount();
+  };
+  reviewCount();
+}
+function reviewCount() {
+  const f = S.words.filter(w => w.faute).length;
+  $("#reviewCount").textContent = f === 0 ? "Aucune faute cochée" : `${f} faute${f>1?"s":""} cochée${f>1?"s":""}`;
+}
+$("#saveBtn").onclick = async () => {
+  const total = (S.end - S.start) / 1000;
+  const ecriture = S.words.reduce((a, w) => a + w.duree, 0);
+  const nl = S.words.reduce((a, w) => a + w.lettres, 0);
+  const d = S.dateStart;
+  const payload = {
+    date: d.toISOString().slice(0,10), heure: d.toTimeString().slice(0,5),
+    mode: S.mode === "cachee" ? "Copie cachée" : "Copie flash", niveau: S.niveau, nb_mots: S.nb,
+    duree_s: Math.round(total*10)/10, ecriture_s: Math.round(ecriture*10)/10, lettres: nl,
+    lettres_par_min: Math.round(nl / (ecriture/60) * 10)/10,
+    revoirs: S.revoirs, fautes: S.words.filter(w => w.faute).length,
+    mots: S.words.map(w => w.mot), mots_faux: S.words.filter(w => w.faute).map(w => w.mot),
+    details: S.words.map((w, k) => ({ position: k+1, mot: w.mot, lettres: w.lettres, duree_s: Math.round(w.duree*10)/10, revoirs: w.revoirs, faute: w.faute ? 1 : 0 }))
+  };
+  let prev = [];
+  try {
+    prev = await Store.sessions();
+    await Store.save(payload);
+  } catch (err) { alert("Impossible d'enregistrer : " + err.message); }
+  summary(payload, prev);
+};
+
+// Repères de vitesse de copie (lettres/min) par niveau, d'après la littérature ;
+// « haut » = enfant moyen-haut de la fourchette. Collège/Lycée : extrapolation.
+const REPERES = { "CP": [5,10,10], "CE1": [10,15,15], "CE2": [20,30,30], "CM1": [30,50,45], "CM2": [30,50,50], "Collège": [50,70,65], "Lycée": [60,80,75] };
+const BRAVOS = ["Tu es une championne !", "Quelle écriture !", "Incroyable, continue comme ça !", "Ton stylo va trop vite !", "Wouah, bravo !"];
+
+function confetti(ms = 4500) {
+  const c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c);
+  const ctx = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
+  const colors = ["#e8792b", "#2f8f83", "#f2c94c", "#eb5757", "#6fcf97", "#56ccf2", "#bb6bd9"];
+  const P = Array.from({ length: 180 }, () => ({
+    x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.6, w: 8 + Math.random() * 8, h: 6 + Math.random() * 6,
+    vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3.5, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .2,
+    col: colors[Math.floor(Math.random() * colors.length)]
+  }));
+  const t0 = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const p of P) {
+      p.x += p.vx + Math.sin(t / 300 + p.r) * .6; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+    }
+    if (t - t0 < ms) requestAnimationFrame(frame); else c.remove();
+  })(t0);
+}
+
+// ---- Résumé ----
+function summary(p, prev) {
+  show("summary");
+  const same = prev.filter(s => s.mode === p.mode && s.niveau === p.niveau);
+  const best = same.length ? Math.max(...same.map(s => +s.lettres_par_min)) : null;
+  const record = best !== null && p.lettres_par_min > best;
+  const sansFaute = p.fautes === 0;
+  let msg, sub, emoji;
+  if (record && sansFaute) { emoji = "🏆"; msg = "Record ET zéro faute ! " + BRAVOS[Math.floor(Math.random() * BRAVOS.length)]; sub = `Avant : ${fmt1(best)} lettres/min · Maintenant : ${fmt1(p.lettres_par_min)}`; }
+  else if (record) { emoji = "🏆"; msg = "Nouveau record de vitesse !"; sub = `Avant : ${fmt1(best)} lettres/min · Maintenant : ${fmt1(p.lettres_par_min)}`; }
+  else if (sansFaute && best === null) { emoji = "🌟"; msg = "Première session, et zéro faute !"; sub = "La prochaine fois, on essaiera d'aller encore plus vite."; }
+  else if (best === null) { emoji = "🌟"; msg = "Première session à ce niveau !"; sub = "La prochaine fois, on essaiera de faire mieux."; }
+  else if (sansFaute) { emoji = "💪"; msg = "Zéro faute, " + BRAVOS[Math.floor(Math.random() * BRAVOS.length)].toLowerCase(); sub = `Ton record de vitesse ici : ${fmt1(best)} lettres/min`; }
+  else { emoji = "🙂"; msg = "Bien joué, continue !"; sub = `Ton record de vitesse ici : ${fmt1(best)} lettres/min`; }
+  const em = $("#sumEmoji"); em.textContent = emoji; em.className = "bigemoji"; void em.offsetWidth; if (record || sansFaute) em.classList.add("bounce");
+  $("#sumMsg").textContent = msg; $("#sumMsg").classList.toggle("record", record); $("#sumSub").textContent = sub;
+  if (record || sansFaute) confetti(record && sansFaute ? 6000 : 4500);
+  const R = REPERES[p.niveau];
+  $("#sumRef").textContent = R ? `repère ${p.niveau} : ${R[0]}–${R[1]} lettres/min, moyen-haut ≈ ${R[2]} · ici : ${fmt1(p.lettres_par_min)}` : "";
+  const cards = [
+    ["⏱ Temps d'écriture", fmt(p.ecriture_s)], ["🚀 Vitesse", fmt1(p.lettres_par_min) + " l/min"],
+    ["🔤 Lettres", p.lettres], ["❌ Fautes", p.fautes]
+  ];
+  if (p.mode === "Copie cachée") cards.push(["👀 Revoirs", p.revoirs]);
+  $("#sumCards").innerHTML = cards.map(([l, v]) => `<div class="card"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+
+// ---- Stats ----
+async function showStats() {
+  show("stats");
+  $("#csvPath").textContent = (await Store.info()).data_dir;
+  $("#openFolder").textContent = Store.mode === "server" ? "Ouvrir le dossier" : "Exporter les CSV";
+  const rows = (await Store.sessions()).reverse();
+  $("#statsSummary").textContent = rows.length ? `${rows.length} session${rows.length>1?"s":""} enregistrée${rows.length>1?"s":""}` : "Aucune session pour l'instant.";
+  const t = $("#statsTable");
+  t.innerHTML = `<tr><th>Date</th><th>Mode</th><th>Niveau</th><th>Mots</th><th>Écriture</th><th>Total</th><th>Lettres</th><th>L/min</th><th>Revoirs</th><th>Fautes</th><th></th></tr>` +
+    rows.map(r => `<tr class="s" data-id="${r.id}"><td>${r.date} ${r.heure}</td><td>${r.mode}</td><td>${r.niveau}</td><td>${r.nb_mots}</td><td>${fmt(+r.ecriture_s)}</td><td>${fmt(+r.duree_s)}</td><td>${r.lettres}</td><td><b>${fmt1(+r.lettres_par_min)}</b></td><td>${r.revoirs}</td><td>${r.fautes}</td><td><button class="del" title="Supprimer cette session" data-del="${r.id}">🗑</button></td></tr>`).join("");
+  t.onclick = async e => {
+    const del = e.target.closest(".del");
+    if (del) {
+      const tr = del.closest("tr");
+      if (!confirm(`Supprimer la session du ${tr.cells[0].textContent} (${tr.cells[1].textContent}, ${tr.cells[2].textContent}) ?`)) return;
+      if (await Store.remove(del.dataset.del)) showStats(); else alert("Suppression impossible.");
+      return;
+    }
+    const tr = e.target.closest("tr.s"); if (!tr) return;
+    const next = tr.nextElementSibling;
+    if (next && next.classList.contains("d")) { next.remove(); return; }
+    const det = await Store.details(tr.dataset.id);
+    const d = document.createElement("tr"); d.className = "d";
+    d.innerHTML = `<td colspan="11"><div class="chips">${det.map(w => `<span class="chip${+w.faute?" bad":""}">${w.mot} · ${fmt1(+w.duree_s)} s${+w.revoirs ? " · 👀" + w.revoirs : ""}</span>`).join("")}</div></td>`;
+    tr.after(d);
+  };
+}
+$("#openFolder").onclick = () => Store.export();
+
+// Serveur Python (CSV) si présent, sinon stockage sur l'appareil.
+Store.init({ key: "copieflash", title: "Copie Flash",
+  sessionCols: ["id", "date", "heure", "mode", "niveau", "nb_mots", "duree_s", "ecriture_s", "lettres", "lettres_par_min", "revoirs", "fautes", "mots", "mots_faux"],
+  detailCols: ["session_id", "position", "mot", "lettres", "duree_s", "revoirs", "faute"] });
+
+show("home");
+// Aperçu de l'écran de résumé : ouvrir l'app avec #demo
+if (location.hash === "#demo") summary({ mode: "Copie flash", niveau: "CE1", nb_mots: 10, ecriture_s: 412, lettres_par_min: 8.7, lettres: 60, fautes: 0, revoirs: 0 }, [{ mode: "Copie flash", niveau: "CE1", lettres_par_min: "7.4" }]);
+</script>
+</body>
+</html>
