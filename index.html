@@ -60,6 +60,14 @@
   .hud { position: absolute; top: 18px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-weight: 600; font-size: 20px; }
   .hud .chrono { font-variant-numeric: tabular-nums; }
   .word { font-weight: 700; letter-spacing: .01em; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
+  /* Syllabes : une couleur par syllabe (cycle de 4) */
+  .syl.s0 { color: var(--accent); } .syl.s1 { color: var(--accent2); } .syl.s2 { color: #7b4fb5; } .syl.s3 { color: #2b6fd8; }
+  .bad .syl { color: inherit; }
+  /* Mode clavier (voyage) */
+  .rep { font: inherit; font-size: 64px; font-weight: 700; text-align: center; color: var(--ink); background: transparent;
+    border: 0; border-bottom: 5px solid var(--line); outline: none; width: min(700px, 90vw); padding: 6px 10px; border-radius: 0; }
+  .rep:focus { border-bottom-color: var(--accent); }
+  .item .typed { display: block; font-size: 15px; font-weight: 400; color: var(--danger); text-decoration: none; margin-top: 2px; }
   .bar { height: 10px; width: min(600px, 80vw); background: var(--line); border-radius: 99px; margin-top: 36px; overflow: hidden; }
   .bar > i { display: block; height: 100%; background: var(--accent); width: 100%; transform-origin: left; }
   .bar.run > i { animation: shrink 3s linear forwards; }
@@ -67,6 +75,8 @@
   .hint { color: var(--muted); font-size: 22px; margin-top: 40px; }
   .hint kbd { background: var(--paper); border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-family: inherit; color: var(--ink); }
   .pencil { font-size: 120px; line-height: 1; }
+  .ear { font-size: 120px; line-height: 1; animation: ear 1s ease-in-out infinite; }
+  @keyframes ear { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
   .dots { display: flex; gap: 8px; justify-content: center; margin-top: 30px; }
   .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
   .dots i.done { background: var(--accent2); }
@@ -85,7 +95,8 @@
     font-size: 26px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
   }
   .item span.n { color: var(--muted); font-size: 15px; font-weight: 400; }
-  .item.bad { border-color: var(--danger); background: #fff1f1; color: var(--danger); text-decoration: line-through; }
+  .item.bad { border-color: var(--danger); background: #fff1f1; color: var(--danger); }
+  .item.bad .w { text-decoration: line-through; }
   .item.bad span.n { color: var(--danger); }
 
   /* Résumé */
@@ -130,7 +141,8 @@
     .pill.big { flex-basis: 100%; padding: 14px 18px; font-size: 18px; } .pill.big small { font-size: 14px; }
     .btn { font-size: 19px; padding: 14px 26px; }
     .hud { top: 10px; font-size: 15px; }
-    .pencil { font-size: 80px; } .hint { font-size: 17px; margin-top: 24px; }
+    .pencil, .ear { font-size: 80px; } .hint { font-size: 17px; margin-top: 24px; }
+    .rep { font-size: 34px; }
     .bar { margin-top: 24px; }
     .touch .btn { min-width: 0; flex: 1 1 130px; }
     .list { grid-template-columns: 1fr 1fr; gap: 8px; } .item { font-size: 20px; padding: 10px 12px; }
@@ -146,12 +158,24 @@
 <section id="home" class="screen">
   <div class="wrap">
     <h1>✏️ Copie Flash</h1>
-    <p class="sub">Regarde le mot, il disparaît, tu l'écris en attaché. Prête ?</p>
+    <p class="sub">Regarde ou écoute le mot, puis écris-le en attaché. Prête ?</p>
 
     <div class="choice"><label>Mode</label>
       <div class="pills" id="modes">
         <button class="pill big sel" data-v="cachee">🙈 Copie cachée<small>Le mot disparaît après 3 s. Tu peux le revoir si besoin.</small></button>
         <button class="pill big" data-v="flash">⚡ Copie flash<small>Le mot disparaît après 3 s, impossible de le revoir.</small></button>
+        <button class="pill big" data-v="dictee">🔊 Dictée<small>Le mot est dit deux fois, tu l'écris. Tu peux le réécouter.</small></button>
+      </div>
+    </div>
+    <div class="choice"><label>Réponse</label>
+      <div class="pills" id="saisies">
+        <button class="pill big sel" data-v="cahier">✍️ Sur le cahier<small>Elle écrit à la main, puis valide.</small></button>
+        <button class="pill big" data-v="clavier">⌨️ Au clavier<small>Mode voyage, sans papier : elle tape le mot, la faute est vérifiée toute seule.</small></button>
+      </div>
+    </div>
+    <div class="choice" id="voixChoice"><label>Voix</label>
+      <div class="pills" id="voix">
+        <button class="pill sel" data-v="1">🔊 Le mot est lu</button><button class="pill" data-v="0">🔇 Sans voix</button>
       </div>
     </div>
     <div class="choice"><label>Niveau</label><div class="pills" id="niveaux"></div></div>
@@ -184,7 +208,7 @@
 <section id="review" class="screen">
   <div class="wrap">
     <h1>Bravo, c'est fini ! 🎉</h1>
-    <p class="sub">Compare avec ton cahier. Touche un mot s'il a une faute.</p>
+    <p class="sub" id="reviewSub">Compare avec ton cahier. Touche un mot s'il a une faute.</p>
     <div class="list" id="reviewList"></div>
     <div class="row">
       <button class="btn" id="saveBtn">Enregistrer</button>
@@ -225,10 +249,13 @@
 
 <script src="mots.js"></script>
 <script src="store.js"></script>
+<script src="voix.js"></script>
+<script src="syllabes.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const SHOW_MS = 3000, PAUSE_MS = 1000;
-const state = { mode: "cachee", niveau: "CE1", nb: 5 };
+const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier" };
+const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée" };
 let S = null; // session en cours
 
 function show(id) { document.querySelectorAll(".screen").forEach(e => e.classList.remove("on")); $("#"+id).classList.add("on"); }
@@ -246,8 +273,10 @@ function pills(sel, key, values, init) {
     state[key] = key === "nb" ? +b.dataset.v : b.dataset.v;
   });
 }
-pills("#modes", "mode"); pills("#nbs", "nb");
+pills("#modes", "mode"); pills("#nbs", "nb"); pills("#saisies", "saisie");
 pills("#niveaux", "niveau", NIVEAUX, state.niveau);
+$("#modes").addEventListener("click", () => { $("#voixChoice").hidden = state.mode === "dictee"; });
+$("#voix").addEventListener("click", e => { if (e.target.closest(".pill")) Voix.toggle(e.target.closest(".pill").dataset.v === "1"); });
 $("#go").onclick = startSession;
 $("#toStats").onclick = showStats; $("#sumStats").onclick = showStats;
 $("#statsHome").onclick = () => show("home"); $("#sumHome").onclick = () => show("home");
@@ -271,17 +300,21 @@ function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
 function startSession() {
+  if (state.mode === "dictee" && !Voix.dispo()) { alert("Pas de voix disponible sur cet appareil : la dictée a besoin d'une voix (voir le README)."); return; }
+  Voix.unlock();
   S = {
-    mode: state.mode, niveau: state.niveau, nb: state.nb,
-    words: pickWords(state.niveau, state.nb).map(w => ({ mot: w, lettres: lettres(w), revoirs: 0, hiddenAt: null, duree: 0, faute: false })),
+    mode: state.mode, niveau: state.niveau, nb: state.nb, clavier: state.saisie === "clavier", draft: "",
+    words: pickWords(state.niveau, state.nb).map(w => ({ mot: w, lettres: lettres(w), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" })),
     i: 0, phase: "pause", start: null, end: null, revoirs: 0, dateStart: new Date()
   };
   show("session");
   $("#hudChrono").textContent = "0:00";
   $("#dots").innerHTML = S.words.map(() => "<i></i>").join("");
-  stage(`<div class="pencil">✏️</div><div class="hint">Prends ton stylo…</div>`);
+  stage(`<div class="pencil">✏️</div><div class="hint">${S.mode === "dictee" ? "Prends ton stylo et écoute bien…" : "Prends ton stylo…"}</div>`);
   $("#bar").style.visibility = "hidden"; $("#hint").textContent = ""; touch(false);
+  $("#tRevoir").textContent = S.mode === "dictee" ? "🔊 Réécouter" : "👀 Revoir";
   updateHud();
+  if (S.mode === "dictee" || Voix.on) Voix.prep(S.words.map(w => w.mot));
   later(() => showWord(false), 2000);
 }
 
@@ -297,8 +330,10 @@ function fitSize(w) {
 
 function showWord(again) {
   const w = S.words[S.i];
+  if (S.mode === "dictee") return ecoute(again);
   S.phase = "showing";
-  stage(`<div class="word" style="font-size:${fitSize(w.mot)}">${w.mot}</div>`);
+  if (Voix.on) Voix.dire(w.mot);
+  stage(`<div class="word" style="font-size:${fitSize(w.mot)}">${Syllabes.html(w.mot)}</div>`);
   $("#hint").textContent = again ? "Regarde bien…" : ""; touch(false);
   const bar = $("#bar"); bar.style.visibility = "visible"; bar.classList.remove("run"); void bar.offsetWidth; bar.classList.add("run");
   updateHud();
@@ -312,22 +347,41 @@ function hideWord() {
   if (w.hiddenAt === null) w.hiddenAt = now;
   if (S.start === null) { S.start = now; chronoTimer = setInterval(() => { $("#hudChrono").textContent = fmt((performance.now()-S.start)/1000); }, 500); }
   $("#bar").style.visibility = "hidden";
-  stage(`<div class="pencil">✍️</div>`);
-  $("#hint").innerHTML = S.mode === "cachee"
-    ? `<kbd>Espace</kbd> revoir le mot &nbsp;&nbsp; <kbd>Entrée</kbd> mot suivant`
-    : `<kbd>Espace</kbd> quand tu as fini d'écrire`;
+  const again = S.mode === "dictee" ? "réécouter le mot" : "revoir le mot";
+  if (S.clavier) {
+    stage(`<input class="rep" id="rep" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" value="${S.draft.replace(/"/g, "&quot;")}">`);
+    $("#hint").innerHTML = `<kbd>Entrée</kbd> valider` + (S.mode !== "flash" ? ` &nbsp;&nbsp; <kbd>Tab</kbd> ${again}` : "");
+    $("#rep").focus();
+  } else {
+    stage(`<div class="pencil">✍️</div>`);
+    $("#hint").innerHTML = S.mode === "flash" ? `<kbd>Espace</kbd> quand tu as fini d'écrire`
+      : `<kbd>Espace</kbd> ${again} &nbsp;&nbsp; <kbd>Entrée</kbd> mot suivant`;
+  }
   touch(true);
 }
+// Dictée : le mot est dit deux fois (comme en classe), puis elle écrit à son rythme ; Espace le redit.
+async function ecoute(again) {
+  const w = S.words[S.i], me = S;
+  S.phase = again ? "hidden" : "listening";
+  stage(`<div class="ear">🔊</div>`); $("#hint").textContent = "Écoute…"; touch(false);
+  updateHud();
+  await Voix.dire(w.mot);
+  if (S !== me || S.phase === "done") return;
+  if (!again) { await new Promise(r => later(r, 700)); if (S !== me) return; await Voix.dire(w.mot); if (S !== me) return; }
+  hideWord();
+}
 // Boutons tactiles (iPhone / trackpad) : mêmes actions que les touches.
-function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode !== "cachee"; }
-function revoir() { if (S && S.phase === "hidden" && S.mode === "cachee") { S.words[S.i].revoirs++; S.revoirs++; showWord(true); } }
-function suivant() { if (S && S.phase === "hidden") validate(); }
-function stop() { if (S && confirm("Arrêter la session ?")) { clearTimers(); clearInterval(chronoTimer); S = null; show("home"); } }
+function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode === "flash"; }
+function revoir() { if (S && S.phase === "hidden" && S.mode !== "flash") { S.draft = $("#rep")?.value || ""; S.words[S.i].revoirs++; S.revoirs++; showWord(true); } }
+function suivant() { if (S && S.phase === "hidden") { Voix.stop(); validate(); } }
+function stop() { if (S && confirm("Arrêter la session ?")) { clearTimers(); clearInterval(chronoTimer); Voix.stop(); S = null; show("home"); } }
 $("#tRevoir").onclick = revoir; $("#tSuivant").onclick = suivant; $("#stopBtn").onclick = stop;
 
+const norm = t => t.trim().toLowerCase().replace(/’/g, "'").replace(/\s+/g, " ");
 function validate() {
   const w = S.words[S.i];
   w.duree = (performance.now() - w.hiddenAt) / 1000;
+  if (S.clavier) { w.reponse = ($("#rep")?.value || "").trim(); w.faute = norm(w.reponse) !== norm(w.mot); S.draft = ""; }
   S.i++;
   if (S.i < S.nb) {
     S.phase = "pause";
@@ -343,16 +397,27 @@ function validate() {
 document.addEventListener("keydown", e => {
   if (!$("#session").classList.contains("on") || !S) return;
   if (e.key === "Escape") { stop(); return; }
+  if (S.clavier) { // le champ reçoit les lettres et l'espace ; Entrée valide, Tab fait revoir/réécouter
+    if (e.key === "Enter") { e.preventDefault(); suivant(); }
+    else if (e.key === "Tab") { e.preventDefault(); revoir(); }
+    return;
+  }
   if (e.key !== " " && e.key !== "Enter") return;
   e.preventDefault();
-  if (e.key === " " && S.mode === "cachee") revoir(); else suivant();
+  if (e.key === " " && S.mode !== "flash") revoir(); else suivant();
 });
 
 // ---- Correction ----
 function review() {
   show("review");
+  $("#reviewSub").textContent = S.clavier
+    ? "Les fautes sont cochées toutes seules. Touche un mot pour changer."
+    : S.mode === "dictee"
+    ? "Voici les mots dictés. Compare avec ton cahier et touche un mot s'il a une faute."
+    : "Compare avec ton cahier. Touche un mot s'il a une faute.";
+  const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const list = $("#reviewList");
-  list.innerHTML = S.words.map((w, k) => `<div class="item" data-k="${k}"><span>${w.mot}</span><span class="n">${w.lettres} l.</span></div>`).join("");
+  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}</span><span class="n">${w.lettres} l.</span></div>`).join("");
   list.onclick = e => {
     const it = e.target.closest(".item"); if (!it) return;
     const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
@@ -371,7 +436,7 @@ $("#saveBtn").onclick = async () => {
   const d = S.dateStart;
   const payload = {
     date: d.toISOString().slice(0,10), heure: d.toTimeString().slice(0,5),
-    mode: S.mode === "cachee" ? "Copie cachée" : "Copie flash", niveau: S.niveau, nb_mots: S.nb,
+    mode: MODES[S.mode] + (S.clavier ? " (clavier)" : ""), niveau: S.niveau, nb_mots: S.nb,
     duree_s: Math.round(total*10)/10, ecriture_s: Math.round(ecriture*10)/10, lettres: nl,
     lettres_par_min: Math.round(nl / (ecriture/60) * 10)/10,
     revoirs: S.revoirs, fautes: S.words.filter(w => w.faute).length,
@@ -429,12 +494,13 @@ function summary(p, prev) {
   $("#sumMsg").textContent = msg; $("#sumMsg").classList.toggle("record", record); $("#sumSub").textContent = sub;
   if (record || sansFaute) confetti(record && sansFaute ? 6000 : 4500);
   const R = REPERES[p.niveau];
-  $("#sumRef").textContent = R ? `repère ${p.niveau} : ${R[0]}–${R[1]} lettres/min, moyen-haut ≈ ${R[2]} · ici : ${fmt1(p.lettres_par_min)}` : "";
+  $("#sumRef").textContent = R && !p.mode.includes("clavier") ? `repère ${p.niveau} : ${R[0]}–${R[1]} lettres/min, moyen-haut ≈ ${R[2]} · ici : ${fmt1(p.lettres_par_min)}` : "";
   const cards = [
     ["⏱ Temps d'écriture", fmt(p.ecriture_s)], ["🚀 Vitesse", fmt1(p.lettres_par_min) + " l/min"],
     ["🔤 Lettres", p.lettres], ["❌ Fautes", p.fautes]
   ];
-  if (p.mode === "Copie cachée") cards.push(["👀 Revoirs", p.revoirs]);
+  if (p.mode.startsWith("Copie cachée")) cards.push(["👀 Revoirs", p.revoirs]);
+  if (p.mode.startsWith("Dictée")) cards.push(["🔊 Réécoutes", p.revoirs]);
   $("#sumCards").innerHTML = cards.map(([l, v]) => `<div class="card"><b>${v}</b><span>${l}</span></div>`).join("");
 }
 
@@ -461,7 +527,7 @@ async function showStats() {
     if (next && next.classList.contains("d")) { next.remove(); return; }
     const det = await Store.details(tr.dataset.id);
     const d = document.createElement("tr"); d.className = "d";
-    d.innerHTML = `<td colspan="11"><div class="chips">${det.map(w => `<span class="chip${+w.faute?" bad":""}">${w.mot} · ${fmt1(+w.duree_s)} s${+w.revoirs ? " · 👀" + w.revoirs : ""}</span>`).join("")}</div></td>`;
+    d.innerHTML = `<td colspan="11"><div class="chips">${det.map(w => `<span class="chip${+w.faute?" bad":""}">${Syllabes.html(w.mot)} · ${fmt1(+w.duree_s)} s${+w.revoirs ? " · 👀" + w.revoirs : ""}</span>`).join("")}</div></td>`;
     tr.after(d);
   };
 }
@@ -470,7 +536,9 @@ $("#openFolder").onclick = () => Store.export();
 // Serveur Python (CSV) si présent, sinon stockage sur l'appareil.
 Store.init({ key: "copieflash", title: "Copie Flash",
   sessionCols: ["id", "date", "heure", "mode", "niveau", "nb_mots", "duree_s", "ecriture_s", "lettres", "lettres_par_min", "revoirs", "fautes", "mots", "mots_faux"],
-  detailCols: ["session_id", "position", "mot", "lettres", "duree_s", "revoirs", "faute"] });
+  detailCols: ["session_id", "position", "mot", "lettres", "duree_s", "revoirs", "faute"] })
+  .then(() => Voix.init("copieflash"))
+  .then(() => { $("#voix").querySelectorAll(".pill").forEach(b => b.classList.toggle("sel", (b.dataset.v === "1") === Voix.on)); });
 
 show("home");
 // Aperçu de l'écran de résumé : ouvrir l'app avec #demo

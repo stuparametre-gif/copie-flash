@@ -5,7 +5,7 @@ Lance un petit serveur local (aucune dépendance) et ouvre l'interface dans une
 fenêtre Chromium. Les statistiques sont écrites dans data/sessions.csv et
 data/details.csv (séparateur « ; », ouvrables dans LibreOffice / Excel).
 """
-import csv, json, os, shutil, socket, subprocess, sys, threading, time, webbrowser
+import csv, glob, hashlib, json, os, shutil, socket, subprocess, sys, threading, time, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -22,6 +22,51 @@ DETAIL_COLS = ["session_id", "position", "mot", "lettres", "duree_s", "revoirs",
 
 lock = threading.Lock()
 last_ping = [None]  # None tant que la page ne s'est jamais connectée
+
+# ---- Voix (Linux) : Piper, synthèse neuronale locale, si installé. ----
+# Sur Mac / iPhone la page utilise les voix du système (speechSynthesis) ; ici Chromium n'en a pas,
+# donc le serveur fabrique les .wav avec Piper (tools/install_voix_linux.sh) et les garde dans data/tts/.
+TTS_DIR = os.path.join(DATA, "tts")
+tts_lock = threading.Lock()
+
+
+def find_piper():
+    exe = shutil.which("piper") or shutil.which("piper-tts")
+    if not exe:
+        return None
+    dirs = [os.environ.get("PIPER_VOICE", ""), os.path.expanduser("~/.local/share/piper"),
+            os.path.join(HERE, "tools", "voix"), "/usr/share/piper-voices"]
+    models = []
+    for d in dirs:
+        if d and d.endswith(".onnx") and os.path.exists(d):
+            models.append(d)
+        elif d and os.path.isdir(d):
+            models += sorted(glob.glob(os.path.join(d, "**", "*.onnx"), recursive=True))
+    models = [m for m in models if os.path.exists(m + ".json")]
+    fr = [m for m in models if "fr_" in os.path.basename(m)] or models
+    return (exe, fr[0]) if fr else None
+
+
+PIPER = find_piper() if sys.platform.startswith("linux") else None
+
+
+def tts_path(mot):
+    return os.path.join(TTS_DIR, hashlib.sha1(mot.encode()).hexdigest()[:16] + ".wav")
+
+
+def tts_make(mots):
+    """Génère (une seule fois) les .wav manquants pour une liste de mots, en un seul lancement de Piper."""
+    if not PIPER:
+        return False
+    todo = [m for m in dict.fromkeys(mots) if m.strip() and not os.path.exists(tts_path(m))]
+    if not todo:
+        return True
+    os.makedirs(TTS_DIR, exist_ok=True)
+    lines = "".join(json.dumps({"text": m + " .", "output_file": tts_path(m)}, ensure_ascii=False) + "\n" for m in todo)
+    with tts_lock:
+        subprocess.run([PIPER[0], "--model", PIPER[1], "--json-input", "--sentence_silence", "0.1"],
+                       input=lines.encode(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+    return all(os.path.exists(tts_path(m)) for m in todo)
 
 
 def read_csv(path):
@@ -79,7 +124,19 @@ class Handler(SimpleHTTPRequestHandler):
             last_ping[0] = time.time()
             return self.send_json({"ok": True})
         if u.path == "/api/info":
-            return self.send_json({"data_dir": DATA})
+            return self.send_json({"data_dir": DATA, "tts": bool(PIPER)})
+        if u.path == "/api/tts":
+            mot = parse_qs(u.query).get("q", [""])[0]
+            path = tts_path(mot)
+            if not os.path.exists(path) and not tts_make([mot]):
+                return self.send_json({"error": "tts"}, 404)
+            with open(path, "rb") as f:
+                body = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "audio/wav")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            return self.wfile.write(body)
         if u.path == "/api/sessions":
             with lock:
                 return self.send_json(read_csv(SESSIONS))
@@ -111,6 +168,10 @@ class Handler(SimpleHTTPRequestHandler):
             if opener:
                 subprocess.Popen([opener, DATA], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return self.send_json({"ok": True})
+        if u.path == "/api/tts":
+            n = int(self.headers.get("Content-Length", 0))
+            p = json.loads(self.rfile.read(n))
+            return self.send_json({"ok": tts_make(p.get("mots", []))})
         if u.path == "/api/session":
             n = int(self.headers.get("Content-Length", 0))
             p = json.loads(self.rfile.read(n))
@@ -165,6 +226,8 @@ def main():
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     print(f"Copie Flash : {URL}  (données : {DATA})")
+    if sys.platform.startswith("linux"):
+        print("Voix : " + (f"Piper, {os.path.basename(PIPER[1])}" if PIPER else "aucune (voir tools/install_voix_linux.sh)"))
     if not headless:
         open_window()
     # S'arrête tout seul ~2 min après la fermeture de la fenêtre (plus de « ping »).
