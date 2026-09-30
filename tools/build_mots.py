@@ -8,6 +8,8 @@ HERE=os.path.dirname(os.path.abspath(__file__)); S=os.path.join(HERE,"sources")
 if not os.path.exists(f"{S}/Lexique383.tsv"): raise SystemExit("Télécharger Lexique383.zip et dézipper Lexique383.tsv dans tools/sources/")
 random.seed(42)
 exec(open(f"{HERE}/blacklist.py",encoding="utf-8").read())   # définit BLACK (set)
+# Fautes d'orthographe présentes dans les sources, corrigées à la lecture.
+FIX={"héroôque":"héroïque","nécéssité":"nécessité"}
 WORD=re.compile(r"[a-zàâäéèêëîïôöùûüÿçœæ]+(?:[-'][a-zàâäéèêëîïôöùûüÿçœæ]+)*")
 STOP=set("ne pas si là oui non plus peu très bien tout sur pour avec lui ici ça ci en y et ou où".split())
 def flags_of(o):
@@ -16,7 +18,7 @@ def flags_of(o):
 lex={}
 with open(f"{S}/Lexique383.tsv",encoding="utf-8") as f:
     for x in csv.DictReader(f,delimiter="\t"):
-        o=x["ortho"]
+        o=FIX.get(x["ortho"],x["ortho"])
         if not WORD.fullmatch(o): continue
         fl=float(x["freqlemlivres"]); ff=float(x["freqlemfilms2"]); n=int(x["nblettres"]); nph=int(x["nbphons"]) or n; syl=int(x["nbsyll"]) or 1
         rec=dict(o=o,cg=x["cgram"],fl=fl,ff=ff,f=0.6*fl+0.4*ff,n=n,syl=syl,silent=max(0,n-nph),flags=flags_of(o),islem=x["islem"]=="1",plural=x["nombre"]=="p" and x["cgram"]=="NOM")
@@ -46,7 +48,7 @@ def base_ok(r):
 # --- vocabulaire connu : Dubois-Buyse + listes v1
 ech={}
 for x in json.load(open(f"{S}/dubois.json")):
-    o=(x.get("word") or x.get("mot ") or "").strip().lower()
+    o=(x.get("word") or x.get("mot ") or "").strip().lower(); o=FIX.get(o,o)
     if WORD.fullmatch(o) and o not in BLACK: ech.setdefault(o,x["level"])
 v1=open(f"{S}/mots_v1.js",encoding="utf-8").read(); body=v1[v1.index("{"):v1.rindex("};")+1]; body=re.sub(r"//.*","",body); body=re.sub(r",\s*]","]",body)
 for L,ws in json.loads(body).items():

@@ -43,6 +43,16 @@ graphie travaillée est en couleur. Dans les stats, le mode devient « Dictée �
   prononciation de Lexique 3.83 (évite les faux amis : « femme » n'a pas le son [an], « ville » pas [ill]).
   À relancer après toute modification de `mots.js` : `python3 tools/build_sons.py chemin/vers/Lexique383.tsv`.
 
+## Définitions
+
+À la correction, chaque mot est suivi d'une définition courte, en une ligne et avec des mots simples
+(« grappe : Groupe de fruits sur une tige (raisin). »). Les 6 967 mots de `mots.js` en ont une.
+
+- Écrites à la main, niveau par niveau, dans `tools/definitions/<NIVEAU>.tsv` (une ligne : `mot<TAB>définition`),
+  modifiables librement. Pour les mots à plusieurs sens courants : les deux, séparés par « ; ».
+- `python3 tools/build_defs.py` assemble `definitions.js` et signale les mots sans définition, en double ou trop longs.
+  À relancer après toute modification des `.tsv` ou de `mots.js`.
+
 ## Voix
 
 En copie cachée / flash, le mot est lu à voix haute quand il s'affiche (désactivable sur l'accueil : « Sans voix »). La dictée en a besoin.

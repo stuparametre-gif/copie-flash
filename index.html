@@ -95,6 +95,10 @@
     font-size: 26px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
   }
   .item span.n { color: var(--muted); font-size: 15px; font-weight: 400; }
+  /* Définition sous le mot, à la correction : plus de place par carte */
+  .list.defs { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .item .def { display: block; font-size: 15px; font-weight: 400; line-height: 1.35; color: var(--muted); margin-top: 4px; }
+  .item.bad .def { color: #b06a6a; }
   .item.bad { border-color: var(--danger); background: #fff1f1; color: var(--danger); }
   .item.bad .w { text-decoration: line-through; }
   .item.bad span.n { color: var(--danger); }
@@ -192,6 +196,7 @@
     .bar { margin-top: 24px; }
     .touch .btn { min-width: 0; flex: 1 1 130px; }
     .list { grid-template-columns: 1fr 1fr; gap: 8px; } .item { font-size: 20px; padding: 10px 12px; }
+    .list.defs { grid-template-columns: 1fr; } .item .def { font-size: 14px; }
     .cards { grid-template-columns: 1fr 1fr; gap: 10px; } .card b { font-size: 28px; }
     .msg { font-size: 22px; } .bigemoji { font-size: 80px; }
     table { font-size: 13px; } th, td { padding: 8px 8px; }
@@ -331,6 +336,7 @@
 <script src="syllabes.js"></script>
 <script src="sons.js"></script>
 <script src="sons_mots.js"></script>
+<script src="definitions.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const SHOW_MS = 3000, PAUSE_MS = 1000;
@@ -547,7 +553,10 @@ function review() {
     : "Compare avec ton cahier. Touche un mot s'il a une faute.";
   const list = $("#reviewList");
   // Dictée avec des sons : la graphie travaillée est mise en couleur, pour voir d'un coup d'œil comment elle s'écrit.
-  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}</span><span class="n">${w.lettres} l.</span></div>`).join("");
+  // Chaque mot vient avec sa définition courte (definitions.js), pour apprendre le sens en corrigeant.
+  const def = m => typeof DEFS !== "undefined" && DEFS[m] ? `<span class="def">${esc(DEFS[m])}</span>` : "";
+  list.classList.toggle("defs", typeof DEFS !== "undefined");
+  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}${def(w.mot)}</span><span class="n">${w.lettres} l.</span></div>`).join("");
   list.onclick = e => {
     const it = e.target.closest(".item"); if (!it) return;
     const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
