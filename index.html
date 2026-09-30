@@ -134,6 +134,49 @@
   .del:hover { opacity: 1; background: #fde8e8; }
   code { background: var(--paper); padding: 2px 6px; border-radius: 6px; }
 
+  /* Les sons : une couleur par graphie dans une fiche */
+  .c0 { color: var(--accent); } .c1 { color: var(--accent2); } .c2 { color: #7b4fb5; }
+  .c3 { color: #2b6fd8; } .c4 { color: #c2417a; } .c5 { color: #5b8a1e; }
+  .hl { color: var(--accent); } .bad .hl { color: inherit; }
+  .muet { color: #cdc4b3; }
+  h2.sec { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
+  .top { margin: 0 0 18px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .tile, .gcard, .pcard, .wchip { font: inherit; color: var(--ink); background: var(--paper); border: 2px solid var(--line); cursor: pointer; text-align: left; transition: border-color .12s, transform .08s; }
+  .tile:hover, .gcard:hover, .pcard:hover, .wchip:hover { border-color: var(--accent); }
+  .tile:active, .gcard:active, .pcard:active, .wchip:active { transform: scale(.98); }
+  .tile { border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .tile .imgs { font-size: 28px; line-height: 1.2; letter-spacing: 2px; }
+  .tile .gs { font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .tile .nom { font-size: 14px; color: var(--muted); }
+  .gcards { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 14px; }
+  .gcard { border-radius: var(--radius); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .gcard .head { display: flex; flex-direction: column; gap: 4px; min-height: 58px; }
+  .gcard .g { font-size: 40px; font-weight: 800; line-height: 1; }
+  .gcard .g small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 6px; }
+  .badge { line-height: 1.2; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
+  .badge.f-top { color: var(--ok); } .badge.f-exception { color: var(--danger); }
+  .gcard .img { font-size: 64px; line-height: 1.1; text-align: center; }
+  .gcard .mot { font-size: 28px; font-weight: 600; text-align: center; }
+  .gcard .fam { font-size: 20px; text-align: center; color: var(--muted); }
+  .gcard .quand { font-size: 16px; line-height: 1.4; color: #4a463f; }
+  .paires { display: flex; flex-direction: column; gap: 12px; }
+  .paire { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 12px; align-items: center; }
+  .paire .ps { font-size: 24px; font-weight: 800; }
+  .pcard { border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 600; }
+  .pcard .img { font-size: 44px; line-height: 1; }
+  .astuces { display: flex; flex-direction: column; gap: 10px; }
+  .astuce { display: flex; gap: 12px; background: #fff4dc; border: 2px solid #f1dfb4; border-radius: 14px; padding: 12px 16px; font-size: 17px; line-height: 1.45; }
+  .astuce p { margin: 0; }
+  .autres { display: flex; flex-direction: column; gap: 10px; }
+  .aline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .aline > .g { font-size: 22px; font-weight: 800; min-width: 56px; }
+  .wchip { border-radius: 10px; padding: 6px 12px; font-size: 19px; }
+  .gcard.dit, .pcard.dit, .wchip.dit { border-color: var(--accent2); }
+  #sonsPick { margin-top: 12px; }
+  @media (max-width: 820px) { .gcards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  #sonsPick .pill { font-size: 17px; padding: 9px 16px; }
+
   /* Petits écrans (iPhone) */
   @media (max-width: 640px) {
     body { font-size: 16px; padding: 0 16px; }
@@ -152,6 +195,13 @@
     .cards { grid-template-columns: 1fr 1fr; gap: 10px; } .card b { font-size: 28px; }
     .msg { font-size: 22px; } .bigemoji { font-size: 80px; }
     table { font-size: 13px; } th, td { padding: 8px 8px; }
+    .tiles { grid-template-columns: 1fr 1fr; gap: 8px; } .tile { padding: 12px; } .tile .imgs { font-size: 22px; } .tile .gs { font-size: 18px; }
+    .gcards { gap: 8px; } .gcard { padding: 10px 12px 12px; }
+    .gcard .g { font-size: 28px; } .gcard .img { font-size: 44px; } .gcard .mot { font-size: 20px; } .gcard .fam { font-size: 16px; }
+    .gcard .quand { font-size: 14px; } .gcard .head { min-height: 46px; gap: 2px; } .badge { font-size: 10px; }
+    .paire { grid-template-columns: 1fr 1fr; gap: 8px; } .paire .ps { grid-column: 1 / -1; font-size: 18px; }
+    .pcard { font-size: 20px; gap: 10px; } .pcard .img { font-size: 32px; }
+    .astuce { font-size: 15px; } .wchip { font-size: 17px; }
   }
 </style>
 </head>
@@ -182,6 +232,12 @@
       </div>
     </div>
     <div class="choice"><label>Niveau</label><div class="pills" id="niveaux"></div></div>
+    <div class="choice" id="motsChoice" hidden><label>Mots</label>
+      <div class="pills" id="motsMode">
+        <button class="pill sel" data-v="hasard">🎲 Au hasard</button><button class="pill" data-v="sons">🔤 Avec des sons</button>
+      </div>
+      <div class="pills" id="sonsPick" hidden></div>
+    </div>
     <div class="choice"><label>Nombre de mots</label>
       <div class="pills" id="nbs">
         <button class="pill sel" data-v="5">5</button><button class="pill" data-v="10">10</button>
@@ -190,8 +246,27 @@
     </div>
     <div class="row">
       <button class="btn" id="go">C'est parti !</button>
+      <button class="btn ghost" id="toSons">🔤 Les sons</button>
       <button class="btn ghost" id="toStats">📊 Statistiques</button>
     </div>
+  </div>
+</section>
+
+<!-- LES SONS -->
+<section id="sons" class="screen">
+  <div class="wrap">
+    <div class="row top"><button class="btn ghost small" id="sonsHome">← Accueil</button></div>
+    <h1>🔤 Les sons</h1>
+    <p class="sub">Choisis un son pour voir comment on l'écrit. Touche une image pour entendre le mot.</p>
+    <div id="sonsList"></div>
+  </div>
+</section>
+
+<!-- FICHE D'UN SON -->
+<section id="fiche" class="screen">
+  <div class="wrap">
+    <div class="row top"><button class="btn ghost small" id="ficheBack">← Tous les sons</button></div>
+    <div id="ficheBody"></div>
   </div>
 </section>
 
@@ -254,15 +329,23 @@
 <script src="store.js"></script>
 <script src="voix.js"></script>
 <script src="syllabes.js"></script>
+<script src="sons.js"></script>
+<script src="sons_mots.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const SHOW_MS = 3000, PAUSE_MS = 1000;
-const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier" };
+const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier", mots: "hasard", sons: new Set() };
 const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée" };
 let S = null; // session en cours
 
 function show(id) { document.querySelectorAll(".screen").forEach(e => e.classList.remove("on")); $("#"+id).classList.add("on"); }
 function lettres(w) { return (w.match(/\p{L}/gu) || []).length; }
+const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+function shuffle(a) { for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+// Mots des fiches de sons : la graphie est entre crochets, « bat[eau] ».
+const brut = m => m.replace(/[[\]]/g, "");
+const marque = (m, cls = "hl") => esc(m).replace(/\[([^\]]*)\]/, `<b class="${cls}">$1</b>`);
+const NIV_OF = {}; NIVEAUX.forEach((L, k) => MOTS[L].forEach(w => { NIV_OF[w] = k; }));
 function fmt(s) { s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
 function fmt1(x) { return (Math.round(x*10)/10).toLocaleString("fr-FR"); }
 
@@ -278,9 +361,25 @@ function pills(sel, key, values, init) {
 }
 pills("#modes", "mode"); pills("#nbs", "nb"); pills("#saisies", "saisie");
 pills("#niveaux", "niveau", NIVEAUX, state.niveau);
-$("#modes").addEventListener("click", () => { $("#voixChoice").hidden = state.mode === "dictee"; });
+pills("#motsMode", "mots");
+function majAccueil() {
+  $("#voixChoice").hidden = state.mode === "dictee";
+  $("#motsChoice").hidden = state.mode !== "dictee";
+  $("#sonsPick").hidden = state.mots !== "sons";
+}
+$("#modes").addEventListener("click", majAccueil); $("#motsMode").addEventListener("click", majAccueil);
+// Dictée « avec des sons » : plusieurs fiches possibles (pas les sons proches, qui n'ont pas de liste de mots).
+$("#sonsPick").innerHTML = SONS_SECTIONS.flatMap(s => s.fiches).filter(f => SONS_MOTS[f])
+  .map(f => `<button class="pill" data-f="${f}">${SONS[f].court}</button>`).join("");
+$("#sonsPick").onclick = e => {
+  const b = e.target.closest(".pill"); if (!b) return;
+  const f = b.dataset.f; state.sons.has(f) ? state.sons.delete(f) : state.sons.add(f);
+  b.classList.toggle("sel", state.sons.has(f));
+};
+function selPill(box, v) { $(box).querySelectorAll(".pill").forEach(p => p.classList.toggle("sel", p.dataset.v === v)); }
 $("#voix").addEventListener("click", e => { if (e.target.closest(".pill")) Voix.toggle(e.target.closest(".pill").dataset.v === "1"); });
 $("#go").onclick = startSession;
+$("#toSons").onclick = showSons; $("#sonsHome").onclick = () => show("home"); $("#ficheBack").onclick = showSons;
 $("#toStats").onclick = showStats; $("#sumStats").onclick = showStats;
 $("#statsHome").onclick = () => show("home"); $("#sumHome").onclick = () => show("home");
 $("#again").onclick = startSession;
@@ -290,11 +389,34 @@ function pickWords(niveau, n) {
   let last = [];
   try { last = JSON.parse(localStorage.getItem("last_"+niveau) || "[]"); } catch {}
   const pool = MOTS[niveau].filter(w => !last.includes(w));
-  const src = pool.length >= n ? pool : MOTS[niveau].slice();
-  for (let i = src.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [src[i], src[j]] = [src[j], src[i]]; }
-  const words = src.slice(0, n);
+  const words = shuffle(pool.length >= n ? pool : MOTS[niveau].slice()).slice(0, n);
   try { localStorage.setItem("last_"+niveau, JSON.stringify(words)); } catch {}
   return words;
+}
+// Dictée avec des sons : on pioche à tour de rôle dans chaque graphie (o, au, eau, ô…) pour les mélanger,
+// d'abord au niveau choisi, puis aux niveaux en dessous ; une graphie absente de ces niveaux (ph en CE1)
+// est prise au niveau au-dessus le plus proche. Renvoie les mots avec la graphie entre crochets.
+function pickWordsSons(niveau, n, fiches) {
+  let last = [];
+  try { last = JSON.parse(localStorage.getItem("last_sons") || "[]"); } catch {}
+  const n0 = NIVEAUX.indexOf(niveau), lv = m => NIV_OF[brut(m)];
+  const tas = [];
+  for (const f of fiches) for (const all of Object.values(SONS_MOTS[f])) {
+    let l = [...shuffle(all.filter(m => lv(m) === n0)), ...shuffle(all.filter(m => lv(m) < n0))];
+    if (!l.length) {
+      const up = all.map(lv).filter(k => k > n0);
+      if (up.length) l = shuffle(all.filter(m => lv(m) === Math.min(...up)));
+    }
+    if (l.length) tas.push(l.sort((a, b) => last.includes(brut(a)) - last.includes(brut(b)))); // mots de la dernière fois à la fin
+  }
+  shuffle(tas);
+  const out = [], vus = new Set();
+  for (let k = 0; out.length < n && tas.some(t => t.length); k++) {
+    const t = tas[k % tas.length];
+    while (t.length) { const m = t.shift(); if (!vus.has(brut(m))) { vus.add(brut(m)); out.push(m); break; } }
+  }
+  try { localStorage.setItem("last_sons", JSON.stringify(out.map(brut))); } catch {}
+  return shuffle(out);
 }
 
 // ---- Session ----
@@ -304,10 +426,13 @@ function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
 function startSession() {
   if (state.mode === "dictee" && !Voix.dispo()) { alert("Pas de voix disponible sur cet appareil : la dictée a besoin d'une voix (voir le README)."); return; }
+  const sons = state.mode === "dictee" && state.mots === "sons" ? Object.keys(SONS).filter(f => state.sons.has(f)) : null;
+  if (sons && !sons.length) { alert("Choisis au moins un son (ou « Au hasard »)."); return; }
   Voix.unlock();
+  const picked = sons ? pickWordsSons(state.niveau, state.nb, sons) : pickWords(state.niveau, state.nb);
   S = {
-    mode: state.mode, niveau: state.niveau, nb: state.nb, clavier: state.saisie === "clavier", draft: "",
-    words: pickWords(state.niveau, state.nb).map(w => ({ mot: w, lettres: lettres(w), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" })),
+    mode: state.mode, niveau: state.niveau, nb: picked.length, clavier: state.saisie === "clavier", draft: "", sons,
+    words: picked.map(m => ({ mot: brut(m), hl: sons ? m : null, lettres: lettres(m), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" })),
     i: 0, phase: "pause", start: null, end: null, revoirs: 0, dateStart: new Date()
   };
   show("session");
@@ -398,6 +523,8 @@ function validate() {
 }
 
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#fiche").classList.contains("on")) { showSons(); return; }
+  if (e.key === "Escape" && $("#sons").classList.contains("on")) { show("home"); return; }
   if (!$("#session").classList.contains("on") || !S) return;
   if (e.key === "Escape") { stop(); return; }
   if (S.clavier) { // le champ reçoit les lettres et l'espace ; Entrée valide, Tab fait revoir/réécouter
@@ -418,9 +545,9 @@ function review() {
     : S.mode === "dictee"
     ? "Voici les mots dictés. Compare avec ton cahier et touche un mot s'il a une faute."
     : "Compare avec ton cahier. Touche un mot s'il a une faute.";
-  const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const list = $("#reviewList");
-  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}</span><span class="n">${w.lettres} l.</span></div>`).join("");
+  // Dictée avec des sons : la graphie travaillée est mise en couleur, pour voir d'un coup d'œil comment elle s'écrit.
+  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}</span><span class="n">${w.lettres} l.</span></div>`).join("");
   list.onclick = e => {
     const it = e.target.closest(".item"); if (!it) return;
     const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
@@ -439,7 +566,9 @@ $("#saveBtn").onclick = async () => {
   const d = S.dateStart;
   const payload = {
     date: d.toISOString().slice(0,10), heure: d.toTimeString().slice(0,5),
-    mode: MODES[S.mode] + (S.clavier ? " (clavier)" : ""), niveau: S.niveau, nb_mots: S.nb,
+    // les dictées de sons ont leurs propres records : « Dictée · [o] [an] »
+    mode: MODES[S.mode] + (S.sons ? " · " + S.sons.map(f => SONS[f].nom).join(" ") : "") + (S.clavier ? " (clavier)" : ""),
+    niveau: S.niveau, nb_mots: S.nb,
     duree_s: Math.round(total*10)/10, ecriture_s: Math.round(ecriture*10)/10, lettres: nl,
     lettres_par_min: Math.round(nl / (ecriture/60) * 10)/10,
     revoirs: S.revoirs, fautes: S.words.filter(w => w.faute).length,
@@ -536,6 +665,84 @@ async function showStats() {
 }
 $("#openFolder").onclick = () => Store.export();
 
+// ---- Les sons (sons.js : fiches ; sons_mots.js : mots de chaque graphie) ----
+const FREQ = { top: "★ la plus fréquente", moins: "moins fréquente", rare: "rare", exception: "exception" };
+function showSons() {
+  show("sons"); window.scrollTo(0, 0);
+  $("#sonsList").innerHTML = SONS_SECTIONS.map(s => `<h2 class="sec">${s.titre}</h2><div class="tiles">${s.fiches.map(f => {
+    const F = SONS[f], imgs = (F.paires ? F.paires.flatMap(p => [p.a, p.b]) : F.graphies).slice(0, 4).map(g => g.img).join("");
+    const gs = F.type ? F.court : F.graphies.filter(g => g.freq !== "exception").map((g, k) => `<span class="c${k}">${g.g}</span>`).join(" ");
+    return `<button class="tile" data-f="${f}"><span class="imgs">${imgs}</span><span class="gs">${gs}</span><span class="nom">${F.titre || "le son " + F.nom}</span></button>`;
+  }).join("")}</div>`).join("");
+}
+$("#sonsList").onclick = e => { const t = e.target.closest(".tile"); if (t) showFiche(t.dataset.f); };
+
+// Mots d'une graphie jusqu'au niveau choisi sur l'accueil (ou au niveau au-dessus le plus proche s'il n'y en a pas).
+function motsDuSon(f, id) {
+  const all = SONS_MOTS[f]?.[id] || [], n0 = NIVEAUX.indexOf(state.niveau), lv = m => NIV_OF[brut(m)];
+  const ok = all.filter(m => lv(m) <= n0);
+  if (ok.length) return ok;
+  const up = all.map(lv).filter(k => k > n0);
+  return up.length ? all.filter(m => lv(m) === Math.min(...up)) : [];
+}
+function autresMots(f) {
+  const F = SONS[f], ids = [...new Set(F.graphies.map(g => g.id || g.g))].filter(id => SONS_MOTS[f]?.[id]?.length);
+  const cls = id => F.type === "muettes" ? "muet" : "c" + F.graphies.findIndex(g => (g.id || g.g) === id);
+  return ids.map(id => {
+    const g = F.graphies.find(g => (g.id || g.g) === id);
+    const ws = shuffle(motsDuSon(f, id).slice()).slice(0, 6);
+    return `<div class="aline">${F.type ? "" : `<span class="g ${cls(id)}">${g.g}</span>`}${ws.map(m => `<button class="wchip" data-dire="${brut(m)}">${marque(m, cls(id))}</button>`).join("")}</div>`;
+  }).join("");
+}
+function showFiche(f) {
+  const F = SONS[f];
+  show("fiche"); window.scrollTo(0, 0);
+  let h = `<h1>${F.titre || "Le son " + F.nom}</h1><p class="sub">${F.intro}</p>`;
+  if (F.paires) {
+    h += `<div class="paires">${F.paires.map(p => `<div class="paire"><span class="ps">${p.sons}</span>` +
+      [p.a, p.b].map((x, k) => `<button class="pcard" data-dire="${brut(x.mot)}"><span class="img">${x.img}</span><span>${marque(x.mot, "c" + k)}</span></button>`).join("") + `</div>`).join("")}</div>`;
+  } else if (F.type === "muettes") {
+    // la lettre muette est pâle ; dans le mot de la famille, on l'entend : elle est en couleur
+    h += `<div class="gcards" style="--cols:4">${F.graphies.map(g => `<button class="gcard" data-dire="${brut(g.mot)}|${brut(g.famille)}"><span class="img">${g.img}</span><span class="mot">${marque(g.mot, "muet")}</span><span class="fam">→ ${marque(g.famille, "c0")}</span></button>`).join("")}</div>`;
+  } else {
+    const n = F.graphies.length; // 4 graphies → 4 colonnes, sinon 3 : pas de carte seule sur sa ligne quand c'est possible
+    h += `<div class="gcards" style="--cols:${n === 4 || n > 6 ? 4 : 3}">${F.graphies.map((g, k) => `<button class="gcard" data-dire="${brut(g.mot)}">
+      <span class="head"><span class="g c${k}">${g.g}${g.sous ? `<small>${g.sous}</small>` : ""}</span>${g.freq ? `<span class="badge f-${g.freq}">${FREQ[g.freq]}</span>` : ""}</span>
+      <span class="img">${g.img}</span><span class="mot">${marque(g.mot, "c" + k)}</span><span class="quand">${g.quand}</span></button>`).join("")}</div>`;
+  }
+  if (F.astuces.length) h += `<h2 class="sec">💡 Astuces</h2><div class="astuces">${F.astuces.map(a => `<div class="astuce"><p>${a}</p></div>`).join("")}</div>`;
+  if (SONS_MOTS[f]) {
+    h += `<h2 class="sec">D'autres mots · ${state.niveau} <button class="btn ghost small" id="autresEncore">🔀 D'autres</button></h2><div class="autres" id="autres">${autresMots(f)}</div>`;
+    h += `<div class="row" style="margin-top:28px"><button class="btn" id="ficheDictee">🔊 Faire une dictée avec ce son</button></div>`;
+  }
+  $("#ficheBody").innerHTML = h;
+  $("#ficheBody").dataset.f = f;
+  // voix Piper (Linux) : les images d'abord, pour qu'elles répondent tout de suite, puis les autres mots
+  const dire = sel => [...$("#ficheBody").querySelectorAll(sel)].flatMap(b => b.dataset.dire.split("|"));
+  Voix.prep(dire(".gcard, .pcard")); Voix.prep(dire(".wchip"));
+}
+$("#ficheBody").onclick = async e => {
+  const f = $("#ficheBody").dataset.f;
+  if (e.target.closest("#autresEncore")) { $("#autres").innerHTML = autresMots(f); Voix.prep([...$("#autres").querySelectorAll("[data-dire]")].map(b => b.dataset.dire)); return; }
+  if (e.target.closest("#ficheDictee")) { dicteeSur(f); return; }
+  const b = e.target.closest("[data-dire]"); if (!b || !Voix.dispo()) return;
+  $("#ficheBody").querySelectorAll(".dit").forEach(x => x.classList.remove("dit")); b.classList.add("dit");
+  for (const [k, m] of b.dataset.dire.split("|").entries()) {
+    if (k) await new Promise(r => setTimeout(r, 400));
+    if (!b.classList.contains("dit")) return; // un autre mot a été touché entre-temps
+    await Voix.dire(m);
+  }
+  b.classList.remove("dit");
+};
+// Depuis une fiche : l'accueil est réglé sur une dictée de ce son, il n'y a plus qu'à lancer.
+function dicteeSur(f) {
+  state.mode = "dictee"; state.mots = "sons"; state.sons = new Set([f]);
+  selPill("#modes", "dictee"); selPill("#motsMode", "sons");
+  $("#sonsPick").querySelectorAll(".pill").forEach(p => p.classList.toggle("sel", p.dataset.f === f));
+  majAccueil(); show("home");
+  $("#go").scrollIntoView({ block: "center" });
+}
+
 // Serveur Python (CSV) si présent, sinon stockage sur l'appareil.
 Store.init({ key: "copieflash", title: "Copie Flash",
   sessionCols: ["id", "date", "heure", "mode", "niveau", "nb_mots", "duree_s", "ecriture_s", "lettres", "lettres_par_min", "revoirs", "fautes", "mots", "mots_faux"],
@@ -544,6 +751,7 @@ Store.init({ key: "copieflash", title: "Copie Flash",
   .then(() => { $("#voix").querySelectorAll(".pill").forEach(b => b.classList.toggle("sel", (b.dataset.v === "1") === Voix.on)); });
 
 show("home");
+if (location.hash === "#sons") showSons();
 // Aperçu de l'écran de résumé : ouvrir l'app avec #demo
 if (location.hash === "#demo") summary({ mode: "Copie flash", niveau: "CE1", nb_mots: 10, ecriture_s: 412, lettres_par_min: 8.7, lettres: 60, fautes: 0, revoirs: 0 }, [{ mode: "Copie flash", niveau: "CE1", lettres_par_min: "7.4" }]);
 </script>

@@ -19,6 +19,30 @@ Petite app locale pour s'entraîner à copier des mots en cursive (copie cachée
 - Les mots sont affichés **en syllabes colorées** (une couleur par syllabe : `syllabes.js`, règles scolaires CP-CE1 approximatives —
   pom-me, ta-ble, mon-ta-gne, vo-ya-ge, po-è-te). Découpage par règles, pas de dictionnaire : quelques mots rares peuvent être coupés bizarrement.
 
+## Les sons
+
+Bouton **🔤 Les sons** sur l'accueil : une fiche par son, avec pour chaque façon de l'écrire une image repère
+(bat**eau**, l**in**… touche l'image pour entendre le mot), la règle « quand l'utiliser », des astuces et d'autres mots
+du niveau choisi sur l'accueil. Pas d'exercice ni de stats : c'est une page pour apprendre et revoir.
+
+- **Un son, plusieurs écritures** : [o] [an] [in] [è] [é] [s] [z] [k] [g] [j] [f] [ill].
+- **Deux lettres pour un seul son** : ou, oi, on, eu, ch, gn.
+- **Les pièges** : m devant m, b, p ; lettres muettes (chat → chaton) ; sons proches (p/b, t/d, f/v… main sur la gorge).
+
+Contenu d'après le programme du cycle 2 (BO du 31/10/2024) : valeurs de s, c, g, an/am, en/em…, lettre muette trouvée
+par la famille de mots ; fréquences des graphies d'après Nina Catach. Les règles de position annoncées
+(eau à la fin, en/em au début des mots…) ont été vérifiées sur les listes de `mots.js`.
+
+**Dictée avec des sons** : en mode Dictée, « Mots » → **Avec des sons**, puis choisir un ou plusieurs sons (ou bouton
+« Faire une dictée avec ce son » sur une fiche). Les mots alternent entre les écritures du son (o, au, eau, ô…), au niveau
+choisi puis en dessous ; une écriture absente du niveau (ph en CE1) est prise au niveau au-dessus. À la correction, la
+graphie travaillée est en couleur. Dans les stats, le mode devient « Dictée · [o] [an] » : records séparés.
+
+- `sons.js` : les fiches (textes, images, règles), modifiable à la main.
+- `sons_mots.js` : les mots de chaque graphie, **généré** par `tools/build_sons.py` à partir de `mots.js` et de la
+  prononciation de Lexique 3.83 (évite les faux amis : « femme » n'a pas le son [an], « ville » pas [ill]).
+  À relancer après toute modification de `mots.js` : `python3 tools/build_sons.py chemin/vers/Lexique383.tsv`.
+
 ## Voix
 
 En copie cachée / flash, le mot est lu à voix haute quand il s'affiche (désactivable sur l'accueil : « Sans voix »). La dictée en a besoin.

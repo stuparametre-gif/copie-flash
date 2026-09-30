@@ -58,14 +58,18 @@ def tts_make(mots):
     """Génère (une seule fois) les .wav manquants pour une liste de mots, en un seul lancement de Piper."""
     if not PIPER:
         return False
-    todo = [m for m in dict.fromkeys(mots) if m.strip() and not os.path.exists(tts_path(m))]
-    if not todo:
-        return True
-    os.makedirs(TTS_DIR, exist_ok=True)
-    lines = "".join(json.dumps({"text": m + " .", "output_file": tts_path(m)}, ensure_ascii=False) + "\n" for m in todo)
-    with tts_lock:
+    with tts_lock:  # la liste est faite sous le verrou : un mot déjà fabriqué par un autre appel n'est pas refait
+        todo = [m for m in dict.fromkeys(mots) if m.strip() and not os.path.exists(tts_path(m))]
+        if not todo:
+            return True
+        os.makedirs(TTS_DIR, exist_ok=True)
+        # Piper écrit dans un .part, renommé à la fin : /api/tts ne lit jamais un .wav à moitié écrit
+        lines = "".join(json.dumps({"text": m + " .", "output_file": tts_path(m) + ".part"}, ensure_ascii=False) + "\n" for m in todo)
         subprocess.run([PIPER[0], "--model", PIPER[1], "--json-input", "--sentence_silence", "0.1"],
                        input=lines.encode(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+        for m in todo:
+            if os.path.exists(tts_path(m) + ".part"):
+                os.replace(tts_path(m) + ".part", tts_path(m))
     return all(os.path.exists(tts_path(m)) for m in todo)
 
 
