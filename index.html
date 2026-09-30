@@ -138,6 +138,9 @@
   .del:hover { opacity: 1; background: #fde8e8; }
   code { background: var(--paper); padding: 2px 6px; border-radius: 6px; }
 
+  #lang { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
+  #lang .pill { padding: 6px 14px; font-size: 14px; }
+
   /* Les sons : une couleur par graphie dans une fiche */
   .c0 { color: var(--accent); } .c1 { color: var(--accent2); } .c2 { color: #7b4fb5; }
   .c3 { color: #2b6fd8; } .c4 { color: #c2417a; } .c5 { color: #5b8a1e; }
@@ -215,44 +218,45 @@
 <!-- ACCUEIL -->
 <section id="home" class="screen">
   <div class="wrap">
+    <div id="lang"><button class="pill" data-l="fr">🇫🇷 Français</button><button class="pill" data-l="pt">🇧🇷 Português</button></div>
     <h1>✏️ Copie Flash</h1>
-    <p class="sub">Regarde ou écoute le mot, puis écris-le en attaché. Prête ?</p>
+    <p class="sub" data-i18n="home_sub">Regarde ou écoute le mot, puis écris-le en attaché. Prête ?</p>
 
-    <div class="choice"><label>Mode</label>
+    <div class="choice"><label data-i18n="l_mode">Mode</label>
       <div class="pills" id="modes">
-        <button class="pill big sel" data-v="cachee">🙈 Copie cachée<small>Le mot disparaît après 3 s. Tu peux le revoir si besoin.</small></button>
-        <button class="pill big" data-v="flash">⚡ Copie flash<small>Le mot disparaît après 3 s, impossible de le revoir.</small></button>
-        <button class="pill big" data-v="dictee">🔊 Dictée<small>Le mot est dit deux fois, tu l'écris. Tu peux le réécouter.</small></button>
+        <button class="pill big sel" data-v="cachee">🙈 <span data-i18n="m_cachee">Copie cachée</span><small data-i18n="m_cachee_s">Le mot disparaît après 3 s. Tu peux le revoir si besoin.</small></button>
+        <button class="pill big" data-v="flash">⚡ <span data-i18n="m_flash">Copie flash</span><small data-i18n="m_flash_s">Le mot disparaît après 3 s, impossible de le revoir.</small></button>
+        <button class="pill big" data-v="dictee">🔊 <span data-i18n="m_dictee">Dictée</span><small data-i18n="m_dictee_s">Le mot est dit deux fois, tu l'écris. Tu peux le réécouter.</small></button>
       </div>
     </div>
-    <div class="choice"><label>Réponse</label>
+    <div class="choice"><label data-i18n="l_saisie">Réponse</label>
       <div class="pills" id="saisies">
-        <button class="pill big sel" data-v="cahier">✍️ Sur le cahier<small>Elle écrit à la main, puis valide.</small></button>
-        <button class="pill big" data-v="clavier">⌨️ Au clavier<small>Mode voyage, sans papier : elle tape le mot, la faute est vérifiée toute seule.</small></button>
+        <button class="pill big sel" data-v="cahier">✍️ <span data-i18n="s_cahier">Sur le cahier</span><small data-i18n="s_cahier_s">Elle écrit à la main, puis valide.</small></button>
+        <button class="pill big" data-v="clavier">⌨️ <span data-i18n="s_clavier">Au clavier</span><small data-i18n="s_clavier_s">Mode voyage, sans papier : elle tape le mot, la faute est vérifiée toute seule.</small></button>
       </div>
     </div>
-    <div class="choice" id="voixChoice"><label>Voix</label>
+    <div class="choice" id="voixChoice"><label data-i18n="l_voix">Voix</label>
       <div class="pills" id="voix">
-        <button class="pill sel" data-v="1">🔊 Le mot est lu</button><button class="pill" data-v="0">🔇 Sans voix</button>
+        <button class="pill sel" data-v="1">🔊 <span data-i18n="v_on">Le mot est lu</span></button><button class="pill" data-v="0">🔇 <span data-i18n="v_off">Sans voix</span></button>
       </div>
     </div>
-    <div class="choice"><label>Niveau</label><div class="pills" id="niveaux"></div></div>
-    <div class="choice" id="motsChoice" hidden><label>Mots</label>
+    <div class="choice"><label data-i18n="l_niveau">Niveau</label><div class="pills" id="niveaux"></div></div>
+    <div class="choice" id="motsChoice" hidden><label data-i18n="l_mots">Mots</label>
       <div class="pills" id="motsMode">
-        <button class="pill sel" data-v="hasard">🎲 Au hasard</button><button class="pill" data-v="sons">🔤 Avec des sons</button>
+        <button class="pill sel" data-v="hasard">🎲 <span data-i18n="w_hasard">Au hasard</span></button><button class="pill" data-v="sons">🔤 <span data-i18n="w_sons">Avec des sons</span></button>
       </div>
       <div class="pills" id="sonsPick" hidden></div>
     </div>
-    <div class="choice"><label>Nombre de mots</label>
+    <div class="choice"><label data-i18n="l_nb">Nombre de mots</label>
       <div class="pills" id="nbs">
         <button class="pill sel" data-v="5">5</button><button class="pill" data-v="10">10</button>
         <button class="pill" data-v="15">15</button><button class="pill" data-v="20">20</button>
       </div>
     </div>
     <div class="row">
-      <button class="btn" id="go">C'est parti !</button>
-      <button class="btn ghost" id="toSons">🔤 Les sons</button>
-      <button class="btn ghost" id="toStats">📊 Statistiques</button>
+      <button class="btn" id="go" data-i18n="go">C'est parti !</button>
+      <button class="btn ghost" id="toSons">🔤 <span data-i18n="toSons">Les sons</span></button>
+      <button class="btn ghost" id="toStats">📊 <span data-i18n="toStats">Statistiques</span></button>
     </div>
   </div>
 </section>
@@ -260,9 +264,9 @@
 <!-- LES SONS -->
 <section id="sons" class="screen">
   <div class="wrap">
-    <div class="row top"><button class="btn ghost small" id="sonsHome">← Accueil</button></div>
-    <h1>🔤 Les sons</h1>
-    <p class="sub">Choisis un son pour voir comment on l'écrit. Touche une image pour entendre le mot.</p>
+    <div class="row top"><button class="btn ghost small" id="sonsHome">← <span data-i18n="home">Accueil</span></button></div>
+    <h1>🔤 <span data-i18n="sons_h">Les sons</span></h1>
+    <p class="sub" data-i18n="sons_sub">Choisis un son pour voir comment on l'écrit. Touche une image pour entendre le mot.</p>
     <div id="sonsList"></div>
   </div>
 </section>
@@ -270,7 +274,7 @@
 <!-- FICHE D'UN SON -->
 <section id="fiche" class="screen">
   <div class="wrap">
-    <div class="row top"><button class="btn ghost small" id="ficheBack">← Tous les sons</button></div>
+    <div class="row top"><button class="btn ghost small" id="ficheBack">← <span data-i18n="allSons">Tous les sons</span></button></div>
     <div id="ficheBody"></div>
   </div>
 </section>
@@ -290,11 +294,11 @@
 <!-- CORRECTION -->
 <section id="review" class="screen">
   <div class="wrap">
-    <h1>Bravo, c'est fini ! 🎉</h1>
+    <h1><span data-i18n="bravo">Bravo, c'est fini !</span> 🎉</h1>
     <p class="sub" id="reviewSub">Compare avec ton cahier. Touche un mot s'il a une faute.</p>
     <div class="list" id="reviewList"></div>
     <div class="row">
-      <button class="btn" id="saveBtn">Enregistrer</button>
+      <button class="btn" id="saveBtn" data-i18n="save">Enregistrer</button>
       <span class="note" id="reviewCount"></span>
     </div>
   </div>
@@ -308,9 +312,9 @@
     <p class="note" id="sumSub"></p>
     <div class="cards" id="sumCards"></div>
     <div class="row">
-      <button class="btn" id="again">Encore une !</button>
-      <button class="btn ghost" id="sumHome">Accueil</button>
-      <button class="btn ghost" id="sumStats">📊 Statistiques</button>
+      <button class="btn" id="again" data-i18n="again">Encore une !</button>
+      <button class="btn ghost" id="sumHome" data-i18n="home">Accueil</button>
+      <button class="btn ghost" id="sumStats">📊 <span data-i18n="toStats">Statistiques</span></button>
     </div>
   </div>
   <div class="ref" id="sumRef"></div>
@@ -319,17 +323,18 @@
 <!-- STATS -->
 <section id="stats" class="screen">
   <div class="wrap">
-    <h1>📊 Statistiques</h1>
-    <p class="sub">Toutes les sessions. Clique sur une ligne pour voir le détail mot par mot.
-      Fichiers : <code id="csvPath"></code> <button class="btn small ghost" id="openFolder">Ouvrir le dossier</button></p>
+    <h1>📊 <span data-i18n="stats_h">Statistiques</span></h1>
+    <p class="sub"><span data-i18n="stats_sub">Toutes les sessions. Clique sur une ligne pour voir le détail mot par mot.
+      Fichiers :</span> <code id="csvPath"></code> <button class="btn small ghost" id="openFolder" data-i18n="openFolder">Ouvrir le dossier</button></p>
     <div class="row" style="margin:0 0 16px">
-      <button class="btn ghost small" id="statsHome">← Accueil</button>
+      <button class="btn ghost small" id="statsHome">← <span data-i18n="home">Accueil</span></button>
       <span class="note" id="statsSummary"></span>
     </div>
     <div class="tablewrap"><table id="statsTable"></table></div>
   </div>
 </section>
 
+<script src="i18n.js"></script>
 <script src="mots.js"></script>
 <script src="store.js"></script>
 <script src="voix.js"></script>
@@ -337,23 +342,24 @@
 <script src="sons.js"></script>
 <script src="sons_mots.js"></script>
 <script src="definitions.js"></script>
+<script>if (LANG === "pt") document.write('<script src="definitions_pt.js"><\/script><script src="sons_pt.js"><\/script>');</script>
 <script>
 const $ = s => document.querySelector(s);
 const SHOW_MS = 3000, PAUSE_MS = 1000;
 const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier", mots: "hasard", sons: new Set() };
-const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée" };
+const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée" }; // valeurs du CSV : toujours en français
 let S = null; // session en cours
 
 function show(id) { document.querySelectorAll(".screen").forEach(e => e.classList.remove("on")); $("#"+id).classList.add("on"); }
 function lettres(w) { return (w.match(/\p{L}/gu) || []).length; }
-const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const esc = x => x.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 function shuffle(a) { for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 // Mots des fiches de sons : la graphie est entre crochets, « bat[eau] ».
 const brut = m => m.replace(/[[\]]/g, "");
 const marque = (m, cls = "hl") => esc(m).replace(/\[([^\]]*)\]/, `<b class="${cls}">$1</b>`);
 const NIV_OF = {}; NIVEAUX.forEach((L, k) => MOTS[L].forEach(w => { NIV_OF[w] = k; }));
 function fmt(s) { s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
-function fmt1(x) { return (Math.round(x*10)/10).toLocaleString("fr-FR"); }
+function fmt1(x) { return (Math.round(x*10)/10).toLocaleString(LANG === "pt" ? "pt-BR" : "fr-FR"); }
 
 // ---- Accueil ----
 function pills(sel, key, values, init) {
@@ -431,9 +437,9 @@ function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
 function startSession() {
-  if (state.mode === "dictee" && !Voix.dispo()) { alert("Pas de voix disponible sur cet appareil : la dictée a besoin d'une voix (voir le README)."); return; }
+  if (state.mode === "dictee" && !Voix.dispo()) { alert(t("noVoice")); return; }
   const sons = state.mode === "dictee" && state.mots === "sons" ? Object.keys(SONS).filter(f => state.sons.has(f)) : null;
-  if (sons && !sons.length) { alert("Choisis au moins un son (ou « Au hasard »)."); return; }
+  if (sons && !sons.length) { alert(t("pickSon")); return; }
   Voix.unlock();
   const picked = sons ? pickWordsSons(state.niveau, state.nb, sons) : pickWords(state.niveau, state.nb);
   S = {
@@ -444,9 +450,9 @@ function startSession() {
   show("session");
   $("#hudChrono").textContent = "0:00";
   $("#dots").innerHTML = S.words.map(() => "<i></i>").join("");
-  stage(`<div class="pencil">✏️</div><div class="hint">${S.mode === "dictee" ? "Prends ton stylo et écoute bien…" : "Prends ton stylo…"}</div>`);
+  stage(`<div class="pencil">✏️</div><div class="hint">${S.mode === "dictee" ? t("pen_dictee") : t("pen")}</div>`);
   $("#bar").style.visibility = "hidden"; $("#hint").textContent = ""; touch(false);
-  $("#tRevoir").textContent = S.mode === "dictee" ? "🔊 Réécouter" : "👀 Revoir";
+  $("#tRevoir").textContent = S.mode === "dictee" ? "🔊 " + t("reecouter") : "👀 " + t("revoir");
   updateHud();
   if (S.mode === "dictee" || Voix.on) Voix.prep(S.words.map(w => w.mot));
   if (S.mode === "dictee") Voix.prep(S.words.map(w => w.mot), true);
@@ -455,7 +461,7 @@ function startSession() {
 
 function stage(html) { $("#stage").innerHTML = html; }
 function updateHud() {
-  $("#hudPos").textContent = `Mot ${Math.min(S.i+1, S.nb)} / ${S.nb} · ${S.niveau}`;
+  $("#hudPos").textContent = t("pos", Math.min(S.i+1, S.nb), S.nb, S.niveau);
   [...$("#dots").children].forEach((d, k) => { d.className = k < S.i ? "done" : k === S.i ? "cur" : ""; });
 }
 function fitSize(w) {
@@ -469,7 +475,7 @@ function showWord(again) {
   S.phase = "showing";
   if (Voix.on) Voix.dire(w.mot);
   stage(`<div class="word" style="font-size:${fitSize(w.mot)}">${Syllabes.html(w.mot)}</div>`);
-  $("#hint").textContent = again ? "Regarde bien…" : ""; touch(false);
+  $("#hint").textContent = again ? t("look") : ""; touch(false);
   const bar = $("#bar"); bar.style.visibility = "visible"; bar.classList.remove("run"); void bar.offsetWidth; bar.classList.add("run");
   updateHud();
   later(hideWord, SHOW_MS);
@@ -482,15 +488,15 @@ function hideWord() {
   if (w.hiddenAt === null) w.hiddenAt = now;
   if (S.start === null) { S.start = now; chronoTimer = setInterval(() => { $("#hudChrono").textContent = fmt((performance.now()-S.start)/1000); }, 500); }
   $("#bar").style.visibility = "hidden";
-  const again = S.mode === "dictee" ? "réécouter le mot" : "revoir le mot";
+  const again = S.mode === "dictee" ? t("again_ecoute") : t("again_revoir");
   if (S.clavier) {
     stage(`<input class="rep" id="rep" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" value="${S.draft.replace(/"/g, "&quot;")}">`);
-    $("#hint").innerHTML = `<kbd>Entrée</kbd> valider` + (S.mode !== "flash" ? ` &nbsp;&nbsp; <kbd>Tab</kbd> ${again}` : "");
+    $("#hint").innerHTML = `<kbd>${t("k_enter")}</kbd> ${t("valider")}` + (S.mode !== "flash" ? ` &nbsp;&nbsp; <kbd>Tab</kbd> ${again}` : "");
     $("#rep").focus();
   } else {
     stage(`<div class="pencil">✍️</div>`);
-    $("#hint").innerHTML = S.mode === "flash" ? `<kbd>Espace</kbd> quand tu as fini d'écrire`
-      : `<kbd>Espace</kbd> ${again} &nbsp;&nbsp; <kbd>Entrée</kbd> mot suivant`;
+    $("#hint").innerHTML = S.mode === "flash" ? `<kbd>${t("k_space")}</kbd> ${t("fini")}`
+      : `<kbd>${t("k_space")}</kbd> ${again} &nbsp;&nbsp; <kbd>${t("k_enter")}</kbd> ${t("motSuivant")}`;
   }
   touch(true);
 }
@@ -498,7 +504,7 @@ function hideWord() {
 async function ecoute(again) {
   const w = S.words[S.i], me = S;
   S.phase = again ? "hidden" : "listening";
-  stage(`<div class="ear">🔊</div>`); $("#hint").textContent = "Écoute…"; touch(false);
+  stage(`<div class="ear">🔊</div>`); $("#hint").textContent = t("listen"); touch(false);
   updateHud();
   await Voix.dire(w.mot, !again);
   if (S !== me || S.phase === "done") return;
@@ -509,7 +515,7 @@ async function ecoute(again) {
 function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode === "flash"; }
 function revoir() { if (S && S.phase === "hidden" && S.mode !== "flash") { S.draft = $("#rep")?.value || ""; S.words[S.i].revoirs++; S.revoirs++; showWord(true); } }
 function suivant() { if (S && S.phase === "hidden") { Voix.stop(); validate(); } }
-function stop() { if (S && confirm("Arrêter la session ?")) { clearTimers(); clearInterval(chronoTimer); Voix.stop(); S = null; show("home"); } }
+function stop() { if (S && confirm(t("stopConfirm"))) { clearTimers(); clearInterval(chronoTimer); Voix.stop(); S = null; show("home"); } }
 $("#tRevoir").onclick = revoir; $("#tSuivant").onclick = suivant; $("#stopBtn").onclick = stop;
 
 const norm = t => t.trim().toLowerCase().replace(/’/g, "'").replace(/\s+/g, " ");
@@ -548,16 +554,18 @@ document.addEventListener("keydown", e => {
 function review() {
   show("review");
   $("#reviewSub").textContent = S.clavier
-    ? "Les fautes sont cochées toutes seules. Touche un mot pour changer."
+    ? t("rev_clavier")
     : S.mode === "dictee"
-    ? "Voici les mots dictés. Compare avec ton cahier et touche un mot s'il a une faute."
-    : "Compare avec ton cahier. Touche un mot s'il a une faute.";
+    ? t("rev_dictee")
+    : t("rev_sub");
   const list = $("#reviewList");
   // Dictée avec des sons : la graphie travaillée est mise en couleur, pour voir d'un coup d'œil comment elle s'écrit.
   // Chaque mot vient avec sa définition courte (definitions.js), pour apprendre le sens en corrigeant.
-  const def = m => typeof DEFS !== "undefined" && DEFS[m] ? `<span class="def">${esc(DEFS[m])}</span>` : "";
+  // En portugais : la définition est traduite (definitions_pt.js) ; à défaut, on garde la française.
+  const D = typeof DEFS_PT !== "undefined" ? { ...DEFS, ...DEFS_PT } : typeof DEFS !== "undefined" ? DEFS : {};
+  const def = m => D[m] ? `<span class="def">${esc(D[m])}</span>` : "";
   list.classList.toggle("defs", typeof DEFS !== "undefined");
-  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">tu as tapé : ${esc(w.reponse) || "(rien)"}</span>` : ""}${def(w.mot)}</span><span class="n">${w.lettres} l.</span></div>`).join("");
+  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">${esc(t("typed", w.reponse))}</span>` : ""}${def(w.mot)}</span><span class="n">${w.lettres} ${t("lettresAbr")}</span></div>`).join("");
   list.onclick = e => {
     const it = e.target.closest(".item"); if (!it) return;
     const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
@@ -567,7 +575,7 @@ function review() {
 }
 function reviewCount() {
   const f = S.words.filter(w => w.faute).length;
-  $("#reviewCount").textContent = f === 0 ? "Aucune faute cochée" : `${f} faute${f>1?"s":""} cochée${f>1?"s":""}`;
+  $("#reviewCount").textContent = f === 0 ? t("noFault") : t("nFaults", f);
 }
 $("#saveBtn").onclick = async () => {
   const total = (S.end - S.start) / 1000;
@@ -589,14 +597,14 @@ $("#saveBtn").onclick = async () => {
   try {
     prev = await Store.sessions();
     await Store.save(payload);
-  } catch (err) { alert("Impossible d'enregistrer : " + err.message); }
+  } catch (err) { alert(t("saveFail") + err.message); }
   summary(payload, prev);
 };
 
 // Repères de vitesse de copie (lettres/min) par niveau, d'après la littérature ;
 // « haut » = enfant moyen-haut de la fourchette. Collège/Lycée : extrapolation.
 const REPERES = { "CP": [5,10,10], "CE1": [10,15,15], "CE2": [20,30,30], "CM1": [30,50,45], "CM2": [30,50,50], "Collège": [50,70,65], "Lycée": [60,80,75] };
-const BRAVOS = ["Tu es une championne !", "Quelle écriture !", "Incroyable, continue comme ça !", "Ton stylo va trop vite !", "Wouah, bravo !"];
+const bravos = () => ["b1", "b2", "b3", "b4", "b5"].map(k => t(k));
 
 function confetti(ms = 4500) {
   const c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c);
@@ -626,42 +634,43 @@ function summary(p, prev) {
   const record = best !== null && p.lettres_par_min > best;
   const sansFaute = p.fautes === 0;
   let msg, sub, emoji;
-  if (record && sansFaute) { emoji = "🏆"; msg = "Record ET zéro faute ! " + BRAVOS[Math.floor(Math.random() * BRAVOS.length)]; sub = `Avant : ${fmt1(best)} lettres/min · Maintenant : ${fmt1(p.lettres_par_min)}`; }
-  else if (record) { emoji = "🏆"; msg = "Nouveau record de vitesse !"; sub = `Avant : ${fmt1(best)} lettres/min · Maintenant : ${fmt1(p.lettres_par_min)}`; }
-  else if (sansFaute && best === null) { emoji = "🌟"; msg = "Première session, et zéro faute !"; sub = "La prochaine fois, on essaiera d'aller encore plus vite."; }
-  else if (best === null) { emoji = "🌟"; msg = "Première session à ce niveau !"; sub = "La prochaine fois, on essaiera de faire mieux."; }
-  else if (sansFaute) { emoji = "💪"; msg = "Zéro faute, " + BRAVOS[Math.floor(Math.random() * BRAVOS.length)].toLowerCase(); sub = `Ton record de vitesse ici : ${fmt1(best)} lettres/min`; }
-  else { emoji = "🙂"; msg = "Bien joué, continue !"; sub = `Ton record de vitesse ici : ${fmt1(best)} lettres/min`; }
+  if (record && sansFaute) { emoji = "🏆"; msg = t("recordZero") + bravos()[Math.floor(Math.random() * 5)]; sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
+  else if (record) { emoji = "🏆"; msg = t("recordSpeed"); sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
+  else if (sansFaute && best === null) { emoji = "🌟"; msg = t("first0"); sub = t("first0_s"); }
+  else if (best === null) { emoji = "🌟"; msg = t("first"); sub = t("first_s"); }
+  else if (sansFaute) { emoji = "💪"; msg = t("zero") + bravos()[Math.floor(Math.random() * 5)].toLowerCase(); sub = t("best", fmt1(best)); }
+  else { emoji = "🙂"; msg = t("nice"); sub = t("best", fmt1(best)); }
   const em = $("#sumEmoji"); em.textContent = emoji; em.className = "bigemoji"; void em.offsetWidth; if (record || sansFaute) em.classList.add("bounce");
   $("#sumMsg").textContent = msg; $("#sumMsg").classList.toggle("record", record); $("#sumSub").textContent = sub;
   if (record || sansFaute) confetti(record && sansFaute ? 6000 : 4500);
   const R = REPERES[p.niveau];
-  $("#sumRef").textContent = R && !p.mode.includes("clavier") ? `repère ${p.niveau} : ${R[0]}–${R[1]} lettres/min, moyen-haut ≈ ${R[2]} · ici : ${fmt1(p.lettres_par_min)}` : "";
+  $("#sumRef").textContent = R && !p.mode.includes("clavier") ? t("ref", p.niveau, R[0], R[1], R[2], fmt1(p.lettres_par_min)) : "";
   const cards = [
-    ["⏱ Temps d'écriture", fmt(p.ecriture_s)], ["🚀 Vitesse", fmt1(p.lettres_par_min) + " l/min"],
-    ["🔤 Lettres", p.lettres], ["❌ Fautes", p.fautes]
+    ["⏱ " + t("c_time"), fmt(p.ecriture_s)], ["🚀 " + t("c_speed"), fmt1(p.lettres_par_min) + " l/min"],
+    ["🔤 " + t("c_letters"), p.lettres], ["❌ " + t("c_faults"), p.fautes]
   ];
-  if (p.mode.startsWith("Copie cachée")) cards.push(["👀 Revoirs", p.revoirs]);
-  if (p.mode.startsWith("Dictée")) cards.push(["🔊 Réécoutes", p.revoirs]);
+  if (p.mode.startsWith("Copie cachée")) cards.push(["👀 " + t("c_revoirs"), p.revoirs]);
+  if (p.mode.startsWith("Dictée")) cards.push(["🔊 " + t("c_reecoutes"), p.revoirs]);
   $("#sumCards").innerHTML = cards.map(([l, v]) => `<div class="card"><b>${v}</b><span>${l}</span></div>`).join("");
 }
 
 // ---- Stats ----
 async function showStats() {
   show("stats");
-  $("#csvPath").textContent = (await Store.info()).data_dir;
-  $("#openFolder").textContent = Store.mode === "server" ? "Ouvrir le dossier" : "Exporter les CSV";
+  const dir = (await Store.info()).data_dir;
+  $("#csvPath").textContent = dir === "sur cet appareil" ? t("onDevice") : dir;
+  $("#openFolder").textContent = Store.mode === "server" ? t("openFolder") : t("exportCsv");
   const rows = (await Store.sessions()).reverse();
-  $("#statsSummary").textContent = rows.length ? `${rows.length} session${rows.length>1?"s":""} enregistrée${rows.length>1?"s":""}` : "Aucune session pour l'instant.";
-  const t = $("#statsTable");
-  t.innerHTML = `<tr><th>Date</th><th>Mode</th><th>Niveau</th><th>Mots</th><th>Écriture</th><th>Total</th><th>Lettres</th><th>L/min</th><th>Revoirs</th><th>Fautes</th><th></th></tr>` +
-    rows.map(r => `<tr class="s" data-id="${r.id}"><td>${r.date} ${r.heure}</td><td>${r.mode}</td><td>${r.niveau}</td><td>${r.nb_mots}</td><td>${fmt(+r.ecriture_s)}</td><td>${fmt(+r.duree_s)}</td><td>${r.lettres}</td><td><b>${fmt1(+r.lettres_par_min)}</b></td><td>${r.revoirs}</td><td>${r.fautes}</td><td><button class="del" title="Supprimer cette session" data-del="${r.id}">🗑</button></td></tr>`).join("");
-  t.onclick = async e => {
+  $("#statsSummary").textContent = rows.length ? t("nSessions", rows.length) : t("noSession");
+  const tbl = $("#statsTable");
+  tbl.innerHTML = `<tr>${t("th").map(h => `<th>${h}</th>`).join("")}<th></th></tr>` +
+    rows.map(r => `<tr class="s" data-id="${r.id}"><td>${r.date} ${r.heure}</td><td>${modeLabel(r.mode)}</td><td>${r.niveau}</td><td>${r.nb_mots}</td><td>${fmt(+r.ecriture_s)}</td><td>${fmt(+r.duree_s)}</td><td>${r.lettres}</td><td><b>${fmt1(+r.lettres_par_min)}</b></td><td>${r.revoirs}</td><td>${r.fautes}</td><td><button class="del" title="${t("delTitle")}" data-del="${r.id}">🗑</button></td></tr>`).join("");
+  tbl.onclick = async e => {
     const del = e.target.closest(".del");
     if (del) {
       const tr = del.closest("tr");
-      if (!confirm(`Supprimer la session du ${tr.cells[0].textContent} (${tr.cells[1].textContent}, ${tr.cells[2].textContent}) ?`)) return;
-      if (await Store.remove(del.dataset.del)) showStats(); else alert("Suppression impossible.");
+      if (!confirm(t("delConfirm", tr.cells[0].textContent, tr.cells[1].textContent, tr.cells[2].textContent))) return;
+      if (await Store.remove(del.dataset.del)) showStats(); else alert(t("delFail"));
       return;
     }
     const tr = e.target.closest("tr.s"); if (!tr) return;
@@ -676,13 +685,13 @@ async function showStats() {
 $("#openFolder").onclick = () => Store.export();
 
 // ---- Les sons (sons.js : fiches ; sons_mots.js : mots de chaque graphie) ----
-const FREQ = { top: "★ la plus fréquente", moins: "moins fréquente", rare: "rare", exception: "exception" };
+const FREQ = new Proxy({}, { get: (_, k) => t("f_" + k) });
 function showSons() {
   show("sons"); window.scrollTo(0, 0);
   $("#sonsList").innerHTML = SONS_SECTIONS.map(s => `<h2 class="sec">${s.titre}</h2><div class="tiles">${s.fiches.map(f => {
     const F = SONS[f], imgs = (F.paires ? F.paires.flatMap(p => [p.a, p.b]) : F.graphies).slice(0, 4).map(g => g.img).join("");
     const gs = F.type ? F.court : F.graphies.filter(g => g.freq !== "exception").map((g, k) => `<span class="c${k}">${g.g}</span>`).join(" ");
-    return `<button class="tile" data-f="${f}"><span class="imgs">${imgs}</span><span class="gs">${gs}</span><span class="nom">${F.titre || "le son " + F.nom}</span></button>`;
+    return `<button class="tile" data-f="${f}"><span class="imgs">${imgs}</span><span class="gs">${gs}</span><span class="nom">${F.titre || t("le_son") + " " + F.nom}</span></button>`;
   }).join("")}</div>`).join("");
 }
 $("#sonsList").onclick = e => { const t = e.target.closest(".tile"); if (t) showFiche(t.dataset.f); };
@@ -707,7 +716,7 @@ function autresMots(f) {
 function showFiche(f) {
   const F = SONS[f];
   show("fiche"); window.scrollTo(0, 0);
-  let h = `<h1>${F.titre || "Le son " + F.nom}</h1><p class="sub">${F.intro}</p>`;
+  let h = `<h1>${F.titre || t("Le_son") + " " + F.nom}</h1><p class="sub">${F.intro}</p>`;
   if (F.paires) {
     h += `<div class="paires">${F.paires.map(p => `<div class="paire"><span class="ps">${p.sons}</span>` +
       [p.a, p.b].map((x, k) => `<button class="pcard" data-dire="${brut(x.mot)}"><span class="img">${x.img}</span><span>${marque(x.mot, "c" + k)}</span></button>`).join("") + `</div>`).join("")}</div>`;
@@ -720,10 +729,10 @@ function showFiche(f) {
       <span class="head"><span class="g c${k}">${g.g}${g.sous ? `<small>${g.sous}</small>` : ""}</span>${g.freq ? `<span class="badge f-${g.freq}">${FREQ[g.freq]}</span>` : ""}</span>
       <span class="img">${g.img}</span><span class="mot">${marque(g.mot, "c" + k)}</span><span class="quand">${g.quand}</span></button>`).join("")}</div>`;
   }
-  if (F.astuces.length) h += `<h2 class="sec">💡 Astuces</h2><div class="astuces">${F.astuces.map(a => `<div class="astuce"><p>${a}</p></div>`).join("")}</div>`;
+  if (F.astuces.length) h += `<h2 class="sec">💡 ${t("astuces")}</h2><div class="astuces">${F.astuces.map(a => `<div class="astuce"><p>${a}</p></div>`).join("")}</div>`;
   if (SONS_MOTS[f]) {
-    h += `<h2 class="sec">D'autres mots · ${state.niveau} <button class="btn ghost small" id="autresEncore">🔀 D'autres</button></h2><div class="autres" id="autres">${autresMots(f)}</div>`;
-    h += `<div class="row" style="margin-top:28px"><button class="btn" id="ficheDictee">🔊 Faire une dictée avec ce son</button></div>`;
+    h += `<h2 class="sec">${t("autres", state.niveau)} <button class="btn ghost small" id="autresEncore">🔀 ${t("encore")}</button></h2><div class="autres" id="autres">${autresMots(f)}</div>`;
+    h += `<div class="row" style="margin-top:28px"><button class="btn" id="ficheDictee">🔊 ${t("dicteeSon")}</button></div>`;
   }
   $("#ficheBody").innerHTML = h;
   $("#ficheBody").dataset.f = f;
@@ -760,6 +769,10 @@ Store.init({ key: "copieflash", title: "Copie Flash",
   .then(() => Voix.init("copieflash"))
   .then(() => { $("#voix").querySelectorAll(".pill").forEach(b => b.classList.toggle("sel", (b.dataset.v === "1") === Voix.on)); });
 
+applyLang();
+$("#tRevoir").textContent = "👀 " + t("revoir"); $("#tSuivant").textContent = "✅ " + t("suivant");
+$("#stopBtn").title = t("stop");
+$("#lang").onclick = e => { const b = e.target.closest("button"); if (b && b.dataset.l !== LANG) setLang(b.dataset.l); };
 show("home");
 if (location.hash === "#sons") showSons();
 // Aperçu de l'écran de résumé : ouvrir l'app avec #demo

@@ -53,6 +53,18 @@ graphie travaillée est en couleur. Dans les stats, le mode devient « Dictée �
 - `python3 tools/build_defs.py` assemble `definitions.js` et signale les mots sans définition, en double ou trop longs.
   À relancer après toute modification des `.tsv` ou de `mots.js`.
 
+## Interface en portugais du Brésil
+
+Pour des enfants qui apprennent le français : boutons **🇫🇷 Français / 🇧🇷 Português** en haut de l'accueil. Le choix est mémorisé ;
+`?lang=pt` dans l'adresse (ex. `…/copie-flash/?lang=pt`) le fixe pour un lien à partager ; sans choix, on suit la langue de l'appareil.
+
+- Seuls l'interface (`i18n.js`), les fiches « Les sons » (`sons_pt.js`) et les définitions (`definitions_pt.js`) passent en portugais.
+  Les mots à écrire, la voix, la consigne « Écris le mot : … » et les fichiers CSV restent en français (les records se comparent sur le mode enregistré en français).
+- Définitions : `tools/definitions_pt/<NIVEAU>.tsv` (`mot<TAB>traduction`, même ordre que le français, la traduction se termine souvent par le mot apparenté
+  en portugais pour faire le lien) ; `python3 tools/build_defs.py` produit aussi `definitions_pt.js` et vérifie que tout mot a sa traduction.
+  Un mot ajouté à `mots.js` doit donc être défini en français **et** en portugais.
+- Une nouvelle fiche dans `sons.js` reste en français tant qu'elle n'est pas ajoutée à `sons_pt.js`.
+
 ## Voix
 
 En copie cachée / flash, le mot est lu à voix haute quand il s'affiche (désactivable sur l'accueil : « Sans voix »). La dictée en a besoin.
@@ -63,6 +75,10 @@ En copie cachée / flash, le mot est lu à voix haute quand il s'affiche (désac
 - **Linux** : Chromium n'a pas de voix ; le serveur utilise **Piper** (synthèse neuronale locale, hors-ligne) s'il est installé :
   `tools/install_voix_linux.sh` (paquet AUR `piper-tts-bin` + voix `fr_FR-siwis-medium`, ~63 Mo, dans `~/.local/share/piper/`).
   Les sons générés sont gardés dans `data/tts/`. Sans Piper, l'app fonctionne sans son (la dictée est alors indisponible).
+- **Enceinte Bluetooth** : PipeWire met la sortie en veille après 5 s de silence et la rallumer avale le début du mot. Pour l'éviter, désactiver la veille :
+  `~/.config/wireplumber/wireplumber.conf.d/bluetooth-no-suspend.conf` (`session.suspend-timeout-seconds = 0` sur les nœuds `bluez_output.*`).
+  En plus, le serveur fait précéder chaque .wav d'une amorce quasi silencieuse (`COPIEFLASH_AMORCE_MS`, 300 ms par défaut, 0 pour couper),
+  et en dictée la 1re écoute dit « Écris le mot : … » pour que ce soit « Écris » et non le mot qui soit avalé.
 
 Colonnes de `sessions.csv` : `duree_s` = temps total du 1er masquage à la dernière validation ; `ecriture_s` = somme des temps par mot (masquage → validation), c'est sur ce temps qu'est calculé `lettres_par_min`.
 
