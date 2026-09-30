@@ -449,6 +449,7 @@ function startSession() {
   $("#tRevoir").textContent = S.mode === "dictee" ? "🔊 Réécouter" : "👀 Revoir";
   updateHud();
   if (S.mode === "dictee" || Voix.on) Voix.prep(S.words.map(w => w.mot));
+  if (S.mode === "dictee") Voix.prep(S.words.map(w => w.mot), true);
   later(() => showWord(false), 2000);
 }
 
@@ -499,7 +500,7 @@ async function ecoute(again) {
   S.phase = again ? "hidden" : "listening";
   stage(`<div class="ear">🔊</div>`); $("#hint").textContent = "Écoute…"; touch(false);
   updateHud();
-  await Voix.dire(w.mot);
+  await Voix.dire(w.mot, !again);
   if (S !== me || S.phase === "done") return;
   if (!again) { await new Promise(r => later(r, 700)); if (S !== me) return; await Voix.dire(w.mot); if (S !== me) return; }
   hideWord();

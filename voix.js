@@ -41,18 +41,19 @@ const Voix = {
     else if ("speechSynthesis" in window) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(""); u.volume = 0; speechSynthesis.speak(u); }
   },
   // Pré-génère les sons côté serveur (Piper) pour éviter toute latence pendant la session.
-  prep(mots) { if (this.server) fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mots }) }).catch(() => {}); },
+  prep(mots, intro) { if (this.server) fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mots, intro: !!intro }) }).catch(() => {}); },
   stop() {
     if (this._audio) { this._audio.pause(); this._audio = null; }
     if ("speechSynthesis" in window) speechSynthesis.cancel();
   },
-  dire(mot) {
+  // intro : « Écris le mot : … » (dictée, 1re écoute). speechSynthesis (Mac/iOS) n'a pas ce souci de réveil d'enceinte.
+  dire(mot, intro) {
     this.stop();
     return new Promise(resolve => {
       let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
       setTimeout(fin, 4000);
       if (this.server) {
-        const a = new Audio("/api/tts?q=" + encodeURIComponent(mot)); this._audio = a;
+        const a = new Audio("/api/tts?q=" + encodeURIComponent(mot) + (intro ? "&intro=1" : "")); this._audio = a;
         a.onended = fin; a.onerror = fin; a.play().catch(fin);
       } else if ("speechSynthesis" in window) {
         const u = new SpeechSynthesisUtterance(mot);

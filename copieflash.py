@@ -5,7 +5,7 @@ Lance un petit serveur local (aucune dépendance) et ouvre l'interface dans une
 fenêtre Chromium. Les statistiques sont écrites dans data/sessions.csv et
 data/details.csv (séparateur « ; », ouvrables dans LibreOffice / Excel).
 """
-import csv, glob, hashlib, json, os, shutil, socket, subprocess, sys, threading, time, webbrowser
+import csv, glob, hashlib, io, json, os, random, shutil, socket, struct, subprocess, sys, threading, time, wave, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -50,27 +50,50 @@ def find_piper():
 PIPER = find_piper() if sys.platform.startswith("linux") else None
 
 
-def tts_path(mot):
-    return os.path.join(TTS_DIR, hashlib.sha1(mot.encode()).hexdigest()[:16] + ".wav")
+# Enceinte Bluetooth : elle met ~0,3 s à « se réveiller » et avale le début du mot (« vilain » → « ien »).
+# On fait donc précéder chaque mot d'une amorce quasi silencieuse (bruit ±2/32768, inaudible mais pas du
+# silence numérique, que certaines enceintes ignorent). Réglable : COPIEFLASH_AMORCE_MS=0 pour la couper.
+AMORCE_MS = int(os.environ.get("COPIEFLASH_AMORCE_MS", "300"))
+
+def avec_amorce(wav_bytes):
+    if AMORCE_MS <= 0:
+        return wav_bytes
+    with wave.open(io.BytesIO(wav_bytes)) as w:
+        params, frames = w.getparams(), w.readframes(w.getnframes())
+    n = params.framerate * AMORCE_MS // 1000 * params.nchannels
+    lead = struct.pack("<%dh" % n, *[random.randint(-2, 2) for _ in range(n)])
+    out = io.BytesIO()
+    with wave.open(out, "wb") as w:
+        w.setparams(params)
+        w.writeframes(lead + frames)
+    return out.getvalue()
+
+def tts_texte(mot, intro=False):
+    # « Écris le mot : … » : c'est « Écris » qui est avalé si l'enceinte traîne, pas le mot (dictée, 1re écoute)
+    return f"Écris le mot : {mot}." if intro else mot + " ."
 
 
-def tts_make(mots):
+def tts_path(mot, intro=False):
+    return os.path.join(TTS_DIR, hashlib.sha1(tts_texte(mot, intro).encode()).hexdigest()[:16] + ".wav")
+
+
+def tts_make(mots, intro=False):
     """Génère (une seule fois) les .wav manquants pour une liste de mots, en un seul lancement de Piper."""
     if not PIPER:
         return False
     with tts_lock:  # la liste est faite sous le verrou : un mot déjà fabriqué par un autre appel n'est pas refait
-        todo = [m for m in dict.fromkeys(mots) if m.strip() and not os.path.exists(tts_path(m))]
+        todo = [m for m in dict.fromkeys(mots) if m.strip() and not os.path.exists(tts_path(m, intro))]
         if not todo:
             return True
         os.makedirs(TTS_DIR, exist_ok=True)
         # Piper écrit dans un .part, renommé à la fin : /api/tts ne lit jamais un .wav à moitié écrit
-        lines = "".join(json.dumps({"text": m + " .", "output_file": tts_path(m) + ".part"}, ensure_ascii=False) + "\n" for m in todo)
+        lines = "".join(json.dumps({"text": tts_texte(m, intro), "output_file": tts_path(m, intro) + ".part"}, ensure_ascii=False) + "\n" for m in todo)
         subprocess.run([PIPER[0], "--model", PIPER[1], "--json-input", "--sentence_silence", "0.1"],
                        input=lines.encode(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
         for m in todo:
-            if os.path.exists(tts_path(m) + ".part"):
-                os.replace(tts_path(m) + ".part", tts_path(m))
-    return all(os.path.exists(tts_path(m)) for m in todo)
+            if os.path.exists(tts_path(m, intro) + ".part"):
+                os.replace(tts_path(m, intro) + ".part", tts_path(m, intro))
+    return all(os.path.exists(tts_path(m, intro)) for m in todo)
 
 
 def read_csv(path):
@@ -130,12 +153,13 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/api/info":
             return self.send_json({"data_dir": DATA, "tts": bool(PIPER)})
         if u.path == "/api/tts":
-            mot = parse_qs(u.query).get("q", [""])[0]
-            path = tts_path(mot)
-            if not os.path.exists(path) and not tts_make([mot]):
+            q = parse_qs(u.query)
+            mot, intro = q.get("q", [""])[0], "intro" in q
+            path = tts_path(mot, intro)
+            if not os.path.exists(path) and not tts_make([mot], intro):
                 return self.send_json({"error": "tts"}, 404)
             with open(path, "rb") as f:
-                body = f.read()
+                body = avec_amorce(f.read())
             self.send_response(200)
             self.send_header("Content-Type", "audio/wav")
             self.send_header("Content-Length", str(len(body)))
@@ -175,7 +199,7 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/api/tts":
             n = int(self.headers.get("Content-Length", 0))
             p = json.loads(self.rfile.read(n))
-            return self.send_json({"ok": tts_make(p.get("mots", []))})
+            return self.send_json({"ok": tts_make(p.get("mots", []), bool(p.get("intro")))})
         if u.path == "/api/session":
             n = int(self.headers.get("Content-Length", 0))
             p = json.loads(self.rfile.read(n))
