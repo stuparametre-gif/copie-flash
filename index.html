@@ -6,257 +6,407 @@
 <title>Copie Flash</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preload" href="fonts/jost.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Copie Flash">
-<meta name="theme-color" content="#e8792b">
+<meta name="theme-color" content="#efefec">
 <style>
+  /* Jost (SIL OFL, fonts/OFL.txt) : police de l'interface, hébergée dans l'app pour marcher hors ligne. */
+  @font-face { font-family: "Jost"; src: url("fonts/jost.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
   :root {
-    --bg: #fbf5e9; --paper: #ffffff; --ink: #2c2a26; --muted: #7c766c;
-    --accent: #e8792b; --accent2: #2f8f83; --danger: #d23f3f; --ok: #3a9a5b;
-    --line: #e6dfd0; --radius: 18px;
+    --bg: #efefec; --sheet: #ffffff; --sheet2: #f6f6f3;
+    --ink: #141414; --ink2: #57554f; --line: #dad8d2;
+    /* les quatre petits êtres = les quatre jeux */
+    --sun: #ff9f1c; --sea: #1c3fd6; --pink: #ff2d8a; --brick: #ff5a1f;
+    --alert: #c8102e; --alert-bg: #fde9ec; --ok: #1f7a4d;
+    --g: var(--ink); --g-on: #fff; /* couleur du jeu choisi, et l'encre lisible dessus */
+    --ui: "Jost", "Adwaita Sans", system-ui, sans-serif;
+    /* police des mots du jeu : NE PAS CHANGER (règle du projet, voir DESIGN.md) */
+    --mot: "Adwaita Sans", "Nimbus Sans", "Liberation Sans", system-ui, sans-serif;
+    --h: 196px; /* hauteur des petits êtres de l'accueil */
+    --ombre: 0 12px 24px -14px rgba(20, 20, 20, .45);
+    --ease: cubic-bezier(.16, 1, .3, 1);
   }
+  body[data-jeu="cachee"] { --g: var(--sun); --g-on: var(--ink); }
+  body[data-jeu="flash"] { --g: var(--sea); --g-on: #fff; }
+  body[data-jeu="dictee"] { --g: var(--pink); --g-on: var(--ink); }
+  body[data-jeu="conj"] { --g: var(--brick); --g-on: var(--ink); }
+
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
+  html { scrollbar-color: #c4c1b9 transparent; }
   body {
-    background: var(--bg); color: var(--ink);
-    font-family: "Adwaita Sans", "Nimbus Sans", "Liberation Sans", system-ui, sans-serif;
-    font-size: 18px; line-height: 1.4; padding: 0 24px;
+    background: var(--bg); color: var(--ink); font-family: var(--ui);
+    font-size: 18px; line-height: 1.45; padding: 0 24px;
+    -webkit-font-smoothing: antialiased; font-kerning: normal;
     user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
     padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
   }
-  button { touch-action: manipulation; }
+  ::selection { background: var(--sun); color: var(--ink); }
+  input { caret-color: var(--g); }
+  button { touch-action: manipulation; font: inherit; color: inherit; }
+  :focus { outline: none; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  [hidden] { display: none !important; } /* sinon .pills (flex) l'emporte sur hidden */
+  .ic { width: 24px; height: 24px; flex: none; }
   .screen { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column; }
   .screen.on { display: flex; }
-  h1 { font-size: 44px; margin: 0 0 6px; letter-spacing: -0.5px; }
-  .sub { color: var(--muted); margin: 0 0 32px; }
+  h1 { font-size: 3rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.02; margin: 0; text-wrap: balance; }
+  .sub { color: var(--ink2); margin: 12px 0 0; font-size: 1.125rem; max-width: 60ch; }
   .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .wrap { max-width: 900px; width: 100%; margin: 0 auto; padding-block: 40px; }
+  .wrap { max-width: 1040px; width: 100%; margin: 0 auto; padding-block: 36px 48px; }
 
-  /* Choix */
-  .choice { margin-bottom: 26px; }
-  .choice label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--muted); text-transform: uppercase; font-size: 13px; letter-spacing: .08em; }
-  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
-  .pill {
-    border: 2px solid var(--line); background: var(--paper); color: var(--ink);
-    padding: 12px 22px; border-radius: 999px; font-size: 19px; cursor: pointer; font-weight: 600;
-    transition: all .12s;
-  }
-  .pill:hover { border-color: var(--accent); }
-  .pill.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .pill.big { padding: 18px 26px; font-size: 21px; text-align: left; border-radius: var(--radius); flex: 1 1 260px; }
-  .pill.big small { display: block; font-weight: 400; font-size: 15px; opacity: .8; margin-top: 4px; }
+  /* Petits êtres (SVG dessinés dans etre()) */
+  .etre-svg { display: block; overflow: visible; }
+  .etre-svg .regard { transform: translate(var(--lx, 0px), var(--ly, 0px)); transition: transform .12s linear; }
+  .etre-svg .paupieres { transform-box: fill-box; transform-origin: center; animation: cligne 7s var(--d, 0s) infinite; }
+  .etre-svg .oeil { transform-box: fill-box; transform-origin: center; transition: transform .18s var(--ease); }
+  @keyframes cligne { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+
+  /* Boutons */
   .btn {
-    border: 0; background: var(--accent2); color: #fff; font-size: 22px; font-weight: 700;
-    padding: 18px 36px; border-radius: 999px; cursor: pointer; box-shadow: 0 4px 0 #22665e;
+    display: inline-flex; align-items: center; gap: 10px; border: 0; cursor: pointer;
+    font-weight: 700; font-size: 1.15rem; padding: 14px 26px; border-radius: 999px;
+    background: var(--ink); color: #fff; transition: transform .15s var(--ease), background .15s;
   }
-  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #22665e; }
-  .btn.ghost { background: transparent; color: var(--accent2); box-shadow: none; border: 2px solid var(--accent2); }
-  .btn.small { font-size: 16px; padding: 10px 20px; }
-  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+  .btn:active { transform: translateY(1px) scale(.98); }
+  .btn.jeu { background: var(--g); color: var(--g-on); }
+  .btn.rose { background: var(--pink); color: var(--ink); }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  .btn.ghost:hover { background: var(--sheet); }
+  .btn.small { font-size: 1rem; padding: 10px 18px; }
+  .btn .ic { width: 22px; height: 22px; }
+  .retour {
+    display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; cursor: pointer;
+    font-weight: 600; font-size: 1.05rem; padding: 8px 14px 8px 6px; margin-left: -6px; border-radius: 999px;
+  }
+  .retour:hover { background: var(--sheet); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
 
-  /* Session */
+  /* ---- Accueil ---- */
+  .home { display: flex; flex-direction: column; min-height: 100dvh; padding-block: 36px 40px; }
+  .entete { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .titre { font-size: 5.5rem; font-weight: 800; letter-spacing: -0.035em; line-height: .9; }
+  .seg { display: inline-flex; background: var(--sheet); border-radius: 999px; padding: 4px; gap: 2px; flex: none; }
+  .seg button { border: 0; background: none; font-weight: 600; font-size: .95rem; padding: 7px 14px; border-radius: 999px; color: var(--ink2); cursor: pointer; }
+  .seg button.sel { background: var(--ink); color: #fff; }
+  .sol { margin-top: auto; padding-top: 48px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .etre { display: flex; flex-direction: column; align-items: flex-start; text-align: left; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 0; }
+  .etre:focus-visible { outline-offset: 6px; }
+  .etre .corps { width: 100%; height: var(--h); display: flex; align-items: flex-end; border-bottom: 3px solid var(--ink); }
+  .etre .etre-svg { height: var(--h); width: auto; transform-origin: 50% 100%; transition: transform .28s var(--ease); }
+  .etre:hover .etre-svg, .etre:focus-visible .etre-svg { transform: translateY(-8px); }
+  .etre.saute .etre-svg { animation: saute .3s var(--ease); }
+  @keyframes saute { 0% { transform: translateY(-8px) scale(1); } 45% { transform: translateY(-30px) scale(.96, 1.05); } 100% { transform: translateY(-8px) scale(1.04, .96); } }
+  /* la copie cachée garde les yeux fermés… jusqu'à ce qu'on vienne la chercher */
+  .etre[data-v="cachee"] .oeil { transform: scaleY(.14); }
+  .etre[data-v="cachee"]:hover .oeil, .etre[data-v="cachee"]:focus-visible .oeil, .etre[data-v="cachee"].saute .oeil { transform: none; }
+  .etre .nom { margin-top: 16px; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.015em; line-height: 1.1; padding-right: 20px; }
+  .etre .dit { margin-top: 6px; font-size: .98rem; line-height: 1.35; color: var(--ink2); padding-right: 24px; max-width: 28ch; }
+  .liens { display: flex; flex-wrap: wrap; gap: 6px 30px; margin-top: 44px; }
+  .lien { display: inline-flex; align-items: center; gap: 10px; border: 0; background: none; cursor: pointer; padding: 10px 6px; margin-left: -6px; border-radius: 12px; font-weight: 600; font-size: 1.15rem; }
+  .lien:hover span { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
+  /* ---- Réglages d'un jeu ---- */
+  .setup { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 64px; align-items: start; margin-top: 28px; }
+  .heros { position: sticky; top: 36px; }
+  .heros .corps { height: 200px; display: flex; align-items: flex-end; border-bottom: 3px solid var(--ink); }
+  .heros .etre-svg { height: 200px; width: auto; animation: arrive .42s var(--ease); transform-origin: 50% 100%; }
+  @keyframes arrive { from { transform: translateY(26px) scale(.9); } }
+  .heros h1 { margin-top: 22px; font-size: 2.75rem; }
+  .heros .sub { font-size: 1.05rem; }
+  .reglages { display: flex; flex-direction: column; gap: 30px; padding-top: 6px; }
+  .choice > label { display: block; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px 20px;
+    border: 0; border-radius: 999px; background: var(--sheet); color: var(--ink); cursor: pointer;
+    font-weight: 600; font-size: 1.08rem; transition: background .15s, color .15s, box-shadow .15s, transform .12s var(--ease);
+  }
+  .pill:hover { box-shadow: inset 0 0 0 2px var(--ink); }
+  .pill:active { transform: scale(.97); }
+  .pill.sel { background: var(--g); color: var(--g-on); box-shadow: none; }
+  .pill .ic { width: 22px; height: 22px; }
+  .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .pill.opt { border-radius: 16px; align-items: flex-start; text-align: left; padding: 14px 18px; gap: 12px; }
+  .pill.opt .ic { margin-top: 2px; }
+  .pill.opt small { display: block; font-weight: 400; font-size: .92rem; line-height: 1.35; margin-top: 3px; color: var(--ink2); }
+  .pill.opt.sel small { color: inherit; opacity: .85; }
+  #sonsPick { margin-top: 10px; }
+  #sonsPick .pill, #tempsPick .pill, #groupesPick .pill { font-size: 1rem; min-height: 44px; padding: 8px 16px; }
+  .go {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 14px; margin-top: 6px; cursor: pointer;
+    border: 0; border-radius: 999px; padding: 20px 34px 20px 38px; background: var(--g); color: var(--g-on);
+    font-weight: 700; font-size: 1.6rem; letter-spacing: -0.01em; box-shadow: var(--ombre);
+    transition: transform .18s var(--ease), box-shadow .18s;
+  }
+  /* « C'est parti ! » reste à portée en bas d'écran, même quand les réglages sont longs */
+  .lancer { position: sticky; bottom: 0; z-index: 2; display: flex; padding: 26px 0 20px; margin-top: -20px;
+    background: linear-gradient(to bottom, rgba(239, 239, 236, 0), var(--bg) 45%); }
+  .go:hover { transform: translateY(-2px); }
+  .go:active { transform: translateY(1px); box-shadow: none; }
+  .go .ic { width: 28px; height: 28px; stroke-width: 2.4; }
+
+  /* ---- Session ---- */
   #session { position: relative; }
-  .hud { position: absolute; top: 18px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-weight: 600; font-size: 20px; }
-  .hud .chrono { font-variant-numeric: tabular-nums; }
-  .word { font-weight: 700; letter-spacing: .01em; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
-  /* Syllabes : une couleur par syllabe (cycle de 4) */
-  .syl.s0 { color: var(--accent); } .syl.s1 { color: var(--accent2); } .syl.s2 { color: #7b4fb5; } .syl.s3 { color: #2b6fd8; }
+  .hud { position: absolute; top: 18px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; color: var(--ink2); font-weight: 600; font-size: 1.15rem; }
+  .hud .chrono { font-variant-numeric: tabular-nums; display: inline-block; min-width: 3.2em; text-align: right; }
+  .hud .stop { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-left: 10px; border: 0; border-radius: 999px; background: transparent; color: var(--ink2); cursor: pointer; vertical-align: middle; }
+  .hud .stop:hover { background: var(--sheet); color: var(--ink); }
+  /* le mot pendant le jeu : police et syllabes inchangées */
+  .word { font-family: var(--mot); font-weight: 700; letter-spacing: .01em; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
+  .syl.s0 { color: #e8792b; } .syl.s1 { color: #2f8f83; } .syl.s2 { color: #7b4fb5; } .syl.s3 { color: #2b6fd8; }
   .bad .syl { color: inherit; }
-  /* Mode clavier (voyage) */
-  .rep { font: inherit; font-size: 64px; font-weight: 700; text-align: center; color: var(--ink); background: transparent;
+  .rep { font-family: var(--mot); font-size: 64px; font-weight: 700; text-align: center; color: var(--ink); background: transparent;
     border: 0; border-bottom: 5px solid var(--line); outline: none; width: min(700px, 90vw); padding: 6px 10px; border-radius: 0; }
-  .rep:focus { border-bottom-color: var(--accent); }
-  .item .typed { display: block; font-size: 15px; font-weight: 400; color: var(--danger); text-decoration: none; margin-top: 2px; }
-  .bar { height: 10px; width: min(600px, 80vw); background: var(--line); border-radius: 99px; margin-top: 36px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: var(--accent); width: 100%; transform-origin: left; }
+  .rep:focus { border-bottom-color: var(--g); }
+  .rep:focus-visible { outline: none; }
+  .bar { height: 8px; width: min(560px, 80vw); background: var(--line); border-radius: 99px; margin-top: 36px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--g); width: 100%; transform-origin: left; }
   .bar.run > i { animation: shrink 3s linear forwards; }
-  @keyframes shrink { from { transform: scaleX(1);} to { transform: scaleX(0);} }
-  .hint { color: var(--muted); font-size: 22px; margin-top: 40px; }
-  .hint kbd { background: var(--paper); border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-family: inherit; color: var(--ink); }
-  .pencil { font-size: 120px; line-height: 1; }
-  .ear { font-size: 120px; line-height: 1; animation: ear 1s ease-in-out infinite; }
-  @keyframes ear { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
-  .dots { display: flex; gap: 8px; justify-content: center; margin-top: 30px; }
-  .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
-  .dots i.done { background: var(--accent2); }
-  .dots i.cur { background: var(--accent); transform: scale(1.3); }
-  .hud .stop { border: 0; background: transparent; color: var(--muted); font-size: 22px; padding: 4px 10px; cursor: pointer; margin-left: 14px; }
-  .touch { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; min-height: 70px; visibility: hidden; }
+  @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  .hint { color: var(--ink2); font-size: 1.2rem; margin-top: 36px; }
+  .hint kbd { font-family: var(--ui); font-weight: 700; font-size: .95rem; color: var(--ink); background: var(--sheet); border-radius: 8px; padding: 4px 11px; box-shadow: inset 0 -3px 0 var(--line); }
+  /* le compagnon : le petit être du jeu, seulement quand le mot est caché */
+  .compagnon { height: 128px; display: flex; align-items: flex-end; justify-content: center; }
+  .compagnon .etre-svg { height: 128px; width: auto; animation: arrive .4s var(--ease); transform-origin: 50% 100%; }
+  .compagnon.parle .etre-svg { animation: parle .9s ease-in-out infinite; }
+  @keyframes parle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04, .97); } }
+  .ondes path { animation: onde 1.2s ease-out infinite; opacity: 0; }
+  .ondes path:nth-child(2) { animation-delay: .2s; } .ondes path:nth-child(3) { animation-delay: .4s; }
+  @keyframes onde { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+  .dots { display: flex; gap: 10px; justify-content: center; margin-top: 32px; }
+  .dots i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 2px #bab7af; transition: transform .2s var(--ease); }
+  .dots i.done { background: var(--ink); box-shadow: none; }
+  .dots i.cur { background: var(--g); box-shadow: none; transform: scale(1.4); }
+  .touch { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 30px; min-height: 60px; visibility: hidden; }
   .touch.on { visibility: visible; }
-  .touch .btn { min-width: 150px; white-space: nowrap; }
-  .touch .btn.again { background: var(--accent); box-shadow: 0 4px 0 #b55a1c; }
+  .touch .btn { min-width: 160px; justify-content: center; white-space: nowrap; }
   @media (hover: none) { .hint { display: none; } }
+  /* Conjugaison : la consigne (pronom + infinitif) garde la police des mots */
+  .cprompt { font-family: var(--mot); font-weight: 700; line-height: 1.15; margin-bottom: 30px; font-size: clamp(30px, 7vw, 60px); color: var(--ink); }
+  .cprompt .cpron { color: #2f8f83; }
+  .cprompt .ctemps { display: block; width: fit-content; margin: 16px auto 0; font-family: var(--ui); font-size: 1rem; font-weight: 600; padding: 4px 14px; border-radius: 999px; background: var(--g); color: var(--g-on); }
 
-  /* Review */
-  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
-  .item {
-    background: var(--paper); border: 2px solid var(--line); border-radius: 14px; padding: 14px 18px;
-    font-size: 26px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-  }
-  .item span.n { color: var(--muted); font-size: 15px; font-weight: 400; }
-  /* Définition sous le mot, à la correction : plus de place par carte */
+  /* ---- Correction ---- */
+  .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 28px 0 8px; }
   .list.defs { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-  .item .def { display: block; font-size: 15px; font-weight: 400; line-height: 1.35; color: var(--muted); margin-top: 4px; }
-  .item.bad .def { color: #b06a6a; }
-  .item.bad { border-color: var(--danger); background: #fff1f1; color: var(--danger); }
-  .item.bad .w { text-decoration: line-through; }
-  .item.bad span.n { color: var(--danger); }
+  .item {
+    background: var(--sheet); border-radius: 16px; padding: 14px 18px; cursor: pointer;
+    font-size: 26px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    box-shadow: inset 0 0 0 2px transparent; transition: box-shadow .15s, background .15s;
+  }
+  .item:hover { box-shadow: inset 0 0 0 2px var(--line); }
+  .item .w { font-family: var(--mot); }
+  .item span.n { color: var(--ink2); font-size: .9rem; font-weight: 500; font-variant-numeric: tabular-nums; flex: none; }
+  .item .def { display: block; font-size: .95rem; font-weight: 400; line-height: 1.35; color: var(--ink2); margin-top: 4px; }
+  .item .typed { display: block; font-size: .95rem; font-weight: 500; color: var(--alert); margin-top: 2px; }
+  .item.bad { background: var(--alert-bg); color: var(--alert); box-shadow: inset 0 0 0 2px var(--alert); }
+  .item.bad .w { text-decoration: line-through; text-decoration-thickness: 2px; }
+  .item.bad .def { color: #8a2a36; }
+  .item.bad span.n { color: var(--alert); }
+  .note { color: var(--ink2); font-size: 1.05rem; }
 
-  /* Résumé */
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 20px 0; width: 100%; }
-  .card { background: var(--paper); border: 2px solid var(--line); border-radius: var(--radius); padding: 18px; }
-  .card b { display: block; font-size: 38px; line-height: 1; }
-  .card span { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: .06em; }
-  .msg { font-size: 30px; font-weight: 700; margin-top: 10px; }
-  .msg.record { color: var(--accent); }
-  .note { color: var(--muted); font-size: 16px; }
-
-  /* Célébration */
-  .bigemoji { font-size: 110px; line-height: 1; animation: pop .7s cubic-bezier(.2,1.6,.4,1) both; }
-  @keyframes pop { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.25) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
-  .bounce { animation: bounce 1.2s ease-in-out .8s infinite; }
-  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  /* ---- Résumé ---- */
+  .fete { height: 170px; display: flex; align-items: flex-end; }
+  .fete .etre-svg { height: 170px; width: auto; transform-origin: 50% 100%; animation: pop .7s cubic-bezier(.2, 1.6, .4, 1) both; }
+  .fete.bounce .etre-svg { animation: pop .7s cubic-bezier(.2, 1.6, .4, 1) both, bounce 1.2s ease-in-out .8s infinite; }
+  @keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.12, .92); } 100% { transform: scale(1); } }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  .msg { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-top: 22px; text-wrap: balance; }
+  .cards { display: flex; flex-wrap: wrap; justify-content: center; margin: 28px 0 8px; background: var(--sheet); border-radius: 18px; overflow: hidden; }
+  .card { padding: 16px 26px; text-align: center; }
+  .card + .card { box-shadow: -1px 0 0 var(--line); }
+  .card b { display: block; font-size: 1.8rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .card span { font-size: .92rem; color: var(--ink2); }
   #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
-  .ref { position: fixed; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 11px; color: #b5ad9f; }
+  .ref { position: fixed; left: 0; right: 0; bottom: 10px; text-align: center; font-size: .85rem; color: var(--ink2); }
 
-  /* Stats */
-  table { width: 100%; border-collapse: collapse; background: var(--paper); font-size: 14px; }
-  th, td { padding: 9px 9px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { background: #f3ecdc; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  /* ---- Statistiques ---- */
+  .tablewrap { overflow-x: auto; border-radius: 16px; background: var(--sheet); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; }
+  th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: var(--sheet2); font-size: .88rem; font-weight: 600; color: var(--ink2); }
   tr.s { cursor: pointer; }
-  tr.s:hover td { background: #fbf8f0; }
-  tr.d td { background: #fbf8f0; padding: 0 12px 14px; white-space: normal; }
+  tr.s:hover td { background: var(--sheet2); }
+  tr.d td { background: var(--sheet2); padding: 0 12px 14px; white-space: normal; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; }
-  .chip { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 14px; }
-  .chip.bad { border-color: var(--danger); color: var(--danger); }
-  .tablewrap { overflow-x: auto; border-radius: 12px; background: var(--paper); }
-  /* Corbeille : dernière colonne collée à droite, visible même quand le tableau défile */
-  th:last-child, td:last-child { position: sticky; right: 0; background: var(--paper); box-shadow: -6px 0 8px -6px rgba(0,0,0,.15); }
-  th:last-child { background: #f3ecdc; } tr.s:hover td:last-child { background: #fbf8f0; }
-  .del { border: 0; background: transparent; cursor: pointer; font-size: 18px; opacity: .6; padding: 2px 6px; border-radius: 6px; }
-  .del:hover { opacity: 1; background: #fde8e8; }
-  code { background: var(--paper); padding: 2px 6px; border-radius: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--sheet); border-radius: 10px; padding: 5px 10px; font-size: .95rem; box-shadow: inset 0 0 0 1px var(--line); }
+  .chip .syl, .chip > span:first-child { font-family: var(--mot); }
+  .chip .ic { width: 15px; height: 15px; }
+  .chip.bad { color: var(--alert); box-shadow: inset 0 0 0 1.5px var(--alert); }
+  th:last-child, td:last-child { position: sticky; right: 0; background: var(--sheet); box-shadow: -6px 0 8px -6px rgba(0, 0, 0, .15); }
+  th:last-child { background: var(--sheet2); } tr.s:hover td:last-child { background: var(--sheet2); }
+  .del { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 0; background: transparent; cursor: pointer; color: var(--ink2); border-radius: 10px; }
+  .del:hover { color: var(--alert); background: var(--alert-bg); }
+  .del .ic { width: 20px; height: 20px; }
+  code { font-size: .9rem; background: var(--sheet); padding: 2px 8px; border-radius: 6px; user-select: text; }
+  .stats-tete { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin: 26px 0 14px; }
 
-  #lang { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
-  #lang .pill { padding: 6px 14px; font-size: 14px; }
-
-  /* Les sons : une couleur par graphie dans une fiche */
-  .c0 { color: var(--accent); } .c1 { color: var(--accent2); } .c2 { color: #7b4fb5; }
+  /* ---- Les sons / Les verbes ---- */
+  .c0 { color: #e8792b; } .c1 { color: #2f8f83; } .c2 { color: #7b4fb5; }
   .c3 { color: #2b6fd8; } .c4 { color: #c2417a; } .c5 { color: #5b8a1e; }
-  .hl { color: var(--accent); } .bad .hl { color: inherit; }
-  .muet { color: #cdc4b3; }
-  h2.sec { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
-  .top { margin: 0 0 18px; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-  .tile, .gcard, .pcard, .wchip { font: inherit; color: var(--ink); background: var(--paper); border: 2px solid var(--line); cursor: pointer; text-align: left; transition: border-color .12s, transform .08s; }
-  .tile:hover, .gcard:hover, .pcard:hover, .wchip:hover { border-color: var(--accent); }
+  .hl { color: #e8792b; } .bad .hl { color: inherit; }
+  .muet { color: #bdb6a6; }
+  h2.sec { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.015em; margin: 44px 0 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .top { margin: 0 0 20px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .tile, .gcard, .pcard, .wchip { color: var(--ink); background: var(--sheet); border: 0; cursor: pointer; text-align: left; transition: box-shadow .12s, transform .08s; }
+  .tile:hover, .gcard:hover, .pcard:hover, .wchip:hover { box-shadow: inset 0 0 0 2px var(--ink); }
   .tile:active, .gcard:active, .pcard:active, .wchip:active { transform: scale(.98); }
-  .tile { border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .tile { border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
   .tile .imgs { font-size: 28px; line-height: 1.2; letter-spacing: 2px; }
   .tile .gs { font-size: 22px; font-weight: 700; line-height: 1.2; }
-  .tile .nom { font-size: 14px; color: var(--muted); }
-  .gcards { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 14px; }
-  .gcard { border-radius: var(--radius); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .tile .nom { font-size: .95rem; color: var(--ink2); }
+  .gcards { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+  .gcard { border-radius: 16px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
   .gcard .head { display: flex; flex-direction: column; gap: 4px; min-height: 58px; }
   .gcard .g { font-size: 40px; font-weight: 800; line-height: 1; }
-  .gcard .g small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 6px; }
-  .badge { line-height: 1.2; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
-  .badge.f-top { color: var(--ok); } .badge.f-exception { color: var(--danger); }
+  .gcard .g small { font-size: 14px; font-weight: 600; color: var(--ink2); margin-left: 6px; }
+  .badge { line-height: 1.2; font-size: .78rem; font-weight: 600; color: var(--ink2); white-space: nowrap; }
+  .badge.f-top { color: var(--ok); } .badge.f-exception { color: var(--alert); }
   .gcard .img { font-size: 64px; line-height: 1.1; text-align: center; }
-  .gcard .mot { font-size: 28px; font-weight: 600; text-align: center; }
-  .gcard .fam { font-size: 20px; text-align: center; color: var(--muted); }
-  .gcard .quand { font-size: 16px; line-height: 1.4; color: #4a463f; }
-  .paires { display: flex; flex-direction: column; gap: 12px; }
+  .gcard .mot { font-size: 28px; font-weight: 600; text-align: center; font-family: var(--mot); }
+  .gcard .fam { font-size: 20px; text-align: center; color: var(--ink2); font-family: var(--mot); }
+  .gcard .quand { font-size: 1rem; line-height: 1.4; color: #3d3b37; }
+  .paires { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
   .paire { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 12px; align-items: center; }
   .paire .ps { font-size: 24px; font-weight: 800; }
-  .pcard { border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 600; }
+  .pcard { border-radius: 16px; padding: 10px 14px; display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 600; font-family: var(--mot); }
   .pcard .img { font-size: 44px; line-height: 1; }
   .astuces { display: flex; flex-direction: column; gap: 10px; }
-  .astuce { display: flex; gap: 12px; background: #fff4dc; border: 2px solid #f1dfb4; border-radius: 14px; padding: 12px 16px; font-size: 17px; line-height: 1.45; }
-  .astuce p { margin: 0; }
+  .astuce { display: flex; gap: 14px; align-items: flex-start; background: var(--sheet); border-radius: 16px; padding: 14px 18px; font-size: 1.05rem; line-height: 1.45; }
+  .astuce::before { content: ""; flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--sun); margin-top: 6px; }
+  .astuce p { margin: 0; max-width: 72ch; }
   .autres { display: flex; flex-direction: column; gap: 10px; }
   .aline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .aline > .g { font-size: 22px; font-weight: 800; min-width: 56px; }
-  .wchip { border-radius: 10px; padding: 6px 12px; font-size: 19px; }
-  .gcard.dit, .pcard.dit, .wchip.dit { border-color: var(--accent2); }
-  #sonsPick { margin-top: 12px; }
+  .wchip { border-radius: 12px; padding: 7px 13px; font-size: 19px; font-family: var(--mot); }
+  .gcard.dit, .pcard.dit, .wchip.dit { box-shadow: inset 0 0 0 3px var(--pink); }
   @media (max-width: 820px) { .gcards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
-  #sonsPick .pill { font-size: 17px; padding: 9px 16px; }
+  .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .vcard { background: var(--sheet); border-radius: 16px; padding: 16px 20px; }
+  .vcard h3 { margin: 0 0 12px; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.015em; font-family: var(--mot); }
+  .vtable { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 20px; font-family: var(--mot); }
+  .vtable .vp { color: var(--ink2); text-align: right; }
+  .vtable .vf b { color: #e8792b; font-weight: 800; }
+  .vgroupe { font-size: .95rem; color: var(--ink2); margin: 0 0 2px; font-weight: 600; }
 
-  /* Petits écrans (iPhone) */
+  @media (min-width: 1200px) { :root { --h: 220px; } }
+  /* Tablette / petit portable */
+  @media (max-width: 960px) {
+    :root { --h: 132px; }
+    .titre { font-size: 4.25rem; }
+    .setup { grid-template-columns: 220px minmax(0, 1fr); gap: 40px; }
+    .heros .corps, .heros .etre-svg { height: 160px; }
+  }
+  /* Téléphone */
   @media (max-width: 640px) {
+    :root { --h: 120px; }
     body { font-size: 16px; padding: 0 16px; }
-    .wrap { padding-block: 24px; }
-    h1 { font-size: 30px; } .sub { margin-bottom: 20px; }
-    .choice { margin-bottom: 18px; }
-    .pill { padding: 10px 16px; font-size: 17px; }
-    .pill.big { flex-basis: 100%; padding: 14px 18px; font-size: 18px; } .pill.big small { font-size: 14px; }
-    .btn { font-size: 19px; padding: 14px 26px; }
-    .hud { top: 10px; font-size: 15px; }
-    .pencil, .ear { font-size: 80px; } .hint { font-size: 17px; margin-top: 24px; }
+    .wrap { padding-block: 22px 32px; }
+    .home { padding-block: 22px 28px; }
+    h1 { font-size: 2.2rem; }
+    .titre { font-size: 3.1rem; }
+    .sub { font-size: 1.02rem; }
+    .sol { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; padding-top: 32px; }
+    .etre .nom { font-size: 1.3rem; margin-top: 12px; }
+    .etre .dit { font-size: .9rem; }
+    .liens { margin-top: 30px; gap: 2px 22px; }
+    .lien { font-size: 1.05rem; }
+    .setup { grid-template-columns: 1fr; gap: 26px; margin-top: 12px; }
+    .heros { position: static; display: grid; grid-template-columns: 96px 1fr; column-gap: 18px; align-items: end; }
+    .heros .corps, .heros .etre-svg { height: 96px; }
+    .heros h1 { margin: 0; font-size: 2rem; }
+    .heros .sub { grid-column: 1 / -1; margin-top: 14px; }
+    .reglages { gap: 24px; }
+    .opts { grid-template-columns: 1fr; }
+    .pill { min-height: 46px; padding: 9px 16px; font-size: 1rem; }
+    .go { flex: 1; justify-content: center; font-size: 1.4rem; padding: 18px 24px; }
+    .hud { top: 10px; font-size: 1rem; }
+    .compagnon, .compagnon .etre-svg { height: 96px; }
+    .hint { font-size: 1.05rem; margin-top: 24px; }
     .rep { font-size: 34px; }
     .bar { margin-top: 24px; }
     .touch .btn { min-width: 0; flex: 1 1 130px; }
     .list { grid-template-columns: 1fr 1fr; gap: 8px; } .item { font-size: 20px; padding: 10px 12px; }
-    .list.defs { grid-template-columns: 1fr; } .item .def { font-size: 14px; }
-    .cards { grid-template-columns: 1fr 1fr; gap: 10px; } .card b { font-size: 28px; }
-    .msg { font-size: 22px; } .bigemoji { font-size: 80px; }
-    table { font-size: 13px; } th, td { padding: 8px 8px; }
+    .list.defs { grid-template-columns: 1fr; } .item .def { font-size: .9rem; }
+    .msg { font-size: 1.6rem; } .fete, .fete .etre-svg { height: 128px; }
+    .card { padding: 12px 16px; } .card b { font-size: 1.4rem; }
+    table { font-size: .85rem; } th, td { padding: 9px 9px; }
     .tiles { grid-template-columns: 1fr 1fr; gap: 8px; } .tile { padding: 12px; } .tile .imgs { font-size: 22px; } .tile .gs { font-size: 18px; }
     .gcards { gap: 8px; } .gcard { padding: 10px 12px 12px; }
     .gcard .g { font-size: 28px; } .gcard .img { font-size: 44px; } .gcard .mot { font-size: 20px; } .gcard .fam { font-size: 16px; }
-    .gcard .quand { font-size: 14px; } .gcard .head { min-height: 46px; gap: 2px; } .badge { font-size: 10px; }
+    .gcard .quand { font-size: .9rem; } .gcard .head { min-height: 46px; gap: 2px; } .badge { font-size: .7rem; }
     .paire { grid-template-columns: 1fr 1fr; gap: 8px; } .paire .ps { grid-column: 1 / -1; font-size: 18px; }
     .pcard { font-size: 20px; gap: 10px; } .pcard .img { font-size: 32px; }
-    .astuce { font-size: 15px; } .wchip { font-size: 17px; }
+    .astuce { font-size: .95rem; } .wchip { font-size: 17px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
 </style>
 </head>
 <body>
 
-<!-- ACCUEIL -->
+<!-- ACCUEIL : on choisit un jeu (un petit être) -->
 <section id="home" class="screen">
-  <div class="wrap">
-    <div id="lang"><button class="pill" data-l="fr">🇫🇷 Français</button><button class="pill" data-l="pt">🇧🇷 Português</button></div>
-    <h1>✏️ Copie Flash</h1>
-    <p class="sub" data-i18n="home_sub">Regarde ou écoute le mot, puis écris-le en attaché. Prête ?</p>
+  <div class="wrap home">
+    <div class="entete">
+      <h1 class="titre">Copie<br>Flash</h1>
+      <div id="lang" class="seg" role="group" aria-label="Langue"><button data-l="fr" lang="fr">FR</button><button data-l="pt" lang="pt-BR">PT</button></div>
+    </div>
+    <p class="sub" data-i18n="choisis">Choisis un jeu.</p>
+    <div class="sol" id="games">
+      <button class="etre" data-v="cachee"><span class="corps"></span><span class="nom" data-i18n="m_cachee">Copie cachée</span><span class="dit" data-i18n="m_cachee_s">Le mot disparaît après 3&nbsp;s. Tu peux le revoir si besoin.</span></button>
+      <button class="etre" data-v="flash"><span class="corps"></span><span class="nom" data-i18n="m_flash">Copie flash</span><span class="dit" data-i18n="m_flash_s">Le mot disparaît après 3&nbsp;s, impossible de le revoir.</span></button>
+      <button class="etre" data-v="dictee"><span class="corps"></span><span class="nom" data-i18n="m_dictee">Dictée</span><span class="dit" data-i18n="m_dictee_s">Le mot est dit deux fois, tu l'écris. Tu peux le réécouter.</span></button>
+      <button class="etre" data-v="conj"><span class="corps"></span><span class="nom" data-i18n="m_conj">Conjugaison</span><span class="dit" data-i18n="m_conj_s">Un verbe, un pronom, un temps : tu écris la forme conjuguée.</span></button>
+    </div>
+    <nav class="liens">
+      <button class="lien" id="toSons"><i data-ic="sons"></i><span data-i18n="toSons">Les sons</span></button>
+      <button class="lien" id="toVerbes"><i data-ic="livre"></i><span data-i18n="toVerbes">Les verbes</span></button>
+      <button class="lien" id="toStats"><i data-ic="stats"></i><span data-i18n="toStats">Statistiques</span></button>
+    </nav>
+  </div>
+</section>
 
-    <div class="choice"><label data-i18n="l_mode">Mode</label>
-      <div class="pills" id="modes">
-        <button class="pill big sel" data-v="cachee">🙈 <span data-i18n="m_cachee">Copie cachée</span><small data-i18n="m_cachee_s">Le mot disparaît après 3 s. Tu peux le revoir si besoin.</small></button>
-        <button class="pill big" data-v="flash">⚡ <span data-i18n="m_flash">Copie flash</span><small data-i18n="m_flash_s">Le mot disparaît après 3 s, impossible de le revoir.</small></button>
-        <button class="pill big" data-v="dictee">🔊 <span data-i18n="m_dictee">Dictée</span><small data-i18n="m_dictee_s">Le mot est dit deux fois, tu l'écris. Tu peux le réécouter.</small></button>
+<!-- RÉGLAGES D'UN JEU : seulement ce qui sert à ce jeu, mémorisé -->
+<section id="setup" class="screen">
+  <div class="wrap">
+    <button class="retour" id="setupBack"><i data-ic="retour"></i><span data-i18n="jeux">Jeux</span></button>
+    <div class="setup">
+      <div class="heros"><span class="corps" id="setupEtre"></span><h1 id="setupNom"></h1><p class="sub" id="setupDit"></p></div>
+      <div class="reglages">
+        <div class="choice"><label data-i18n="l_niveau">Niveau</label><div class="pills" id="niveaux"></div></div>
+        <div class="choice" id="motsChoice" hidden><label data-i18n="l_mots">Mots</label>
+          <div class="pills" id="motsMode">
+            <button class="pill sel" data-v="hasard"><i data-ic="de"></i><span data-i18n="w_hasard">Au hasard</span></button><button class="pill" data-v="sons"><i data-ic="sons"></i><span data-i18n="w_sons">Avec des sons</span></button>
+          </div>
+          <div class="pills" id="sonsPick" hidden></div>
+        </div>
+        <div class="choice" id="conjTemps" hidden><label data-i18n="l_temps">Temps</label><div class="pills" id="tempsPick"></div></div>
+        <div class="choice" id="conjVerbes" hidden><label data-i18n="l_verbes">Verbes</label><div class="pills" id="groupesPick"></div></div>
+        <div class="choice"><label data-i18n="l_nb">Nombre de mots</label>
+          <div class="pills" id="nbs">
+            <button class="pill sel" data-v="5">5</button><button class="pill" data-v="10">10</button>
+            <button class="pill" data-v="15">15</button><button class="pill" data-v="20">20</button>
+          </div>
+        </div>
+        <div class="choice"><label data-i18n="l_saisie">Réponse</label>
+          <div class="pills opts" id="saisies">
+            <button class="pill opt sel" data-v="cahier"><i data-ic="crayon"></i><span><span data-i18n="s_cahier">Sur le cahier</span><small data-i18n="s_cahier_s">Elle écrit à la main, puis valide.</small></span></button>
+            <button class="pill opt" data-v="clavier"><i data-ic="clavier"></i><span><span data-i18n="s_clavier">Au clavier</span><small data-i18n="s_clavier_s">Mode voyage, sans papier : elle tape le mot, la faute est vérifiée toute seule.</small></span></button>
+          </div>
+        </div>
+        <div class="choice" id="voixChoice"><label data-i18n="l_voix">Voix</label>
+          <div class="pills" id="voix">
+            <button class="pill sel" data-v="1"><i data-ic="voix"></i><span data-i18n="v_on">Le mot est lu</span></button><button class="pill" data-v="0"><i data-ic="muet"></i><span data-i18n="v_off">Sans voix</span></button>
+          </div>
+        </div>
+        <div class="lancer"><button class="go" id="go"><span data-i18n="go">C'est parti !</span><i data-ic="go"></i></button></div>
       </div>
-    </div>
-    <div class="choice"><label data-i18n="l_saisie">Réponse</label>
-      <div class="pills" id="saisies">
-        <button class="pill big sel" data-v="cahier">✍️ <span data-i18n="s_cahier">Sur le cahier</span><small data-i18n="s_cahier_s">Elle écrit à la main, puis valide.</small></button>
-        <button class="pill big" data-v="clavier">⌨️ <span data-i18n="s_clavier">Au clavier</span><small data-i18n="s_clavier_s">Mode voyage, sans papier : elle tape le mot, la faute est vérifiée toute seule.</small></button>
-      </div>
-    </div>
-    <div class="choice" id="voixChoice"><label data-i18n="l_voix">Voix</label>
-      <div class="pills" id="voix">
-        <button class="pill sel" data-v="1">🔊 <span data-i18n="v_on">Le mot est lu</span></button><button class="pill" data-v="0">🔇 <span data-i18n="v_off">Sans voix</span></button>
-      </div>
-    </div>
-    <div class="choice"><label data-i18n="l_niveau">Niveau</label><div class="pills" id="niveaux"></div></div>
-    <div class="choice" id="motsChoice" hidden><label data-i18n="l_mots">Mots</label>
-      <div class="pills" id="motsMode">
-        <button class="pill sel" data-v="hasard">🎲 <span data-i18n="w_hasard">Au hasard</span></button><button class="pill" data-v="sons">🔤 <span data-i18n="w_sons">Avec des sons</span></button>
-      </div>
-      <div class="pills" id="sonsPick" hidden></div>
-    </div>
-    <div class="choice"><label data-i18n="l_nb">Nombre de mots</label>
-      <div class="pills" id="nbs">
-        <button class="pill sel" data-v="5">5</button><button class="pill" data-v="10">10</button>
-        <button class="pill" data-v="15">15</button><button class="pill" data-v="20">20</button>
-      </div>
-    </div>
-    <div class="row">
-      <button class="btn" id="go" data-i18n="go">C'est parti !</button>
-      <button class="btn ghost" id="toSons">🔤 <span data-i18n="toSons">Les sons</span></button>
-      <button class="btn ghost" id="toStats">📊 <span data-i18n="toStats">Statistiques</span></button>
     </div>
   </div>
 </section>
@@ -264,8 +414,8 @@
 <!-- LES SONS -->
 <section id="sons" class="screen">
   <div class="wrap">
-    <div class="row top"><button class="btn ghost small" id="sonsHome">← <span data-i18n="home">Accueil</span></button></div>
-    <h1>🔤 <span data-i18n="sons_h">Les sons</span></h1>
+    <div class="top"><button class="retour" id="sonsHome"><i data-ic="retour"></i><span data-i18n="home">Accueil</span></button></div>
+    <h1 data-i18n="sons_h">Les sons</h1>
     <p class="sub" data-i18n="sons_sub">Choisis un son pour voir comment on l'écrit. Touche une image pour entendre le mot.</p>
     <div id="sonsList"></div>
   </div>
@@ -274,19 +424,29 @@
 <!-- FICHE D'UN SON -->
 <section id="fiche" class="screen">
   <div class="wrap">
-    <div class="row top"><button class="btn ghost small" id="ficheBack">← <span data-i18n="allSons">Tous les sons</span></button></div>
+    <div class="top"><button class="retour" id="ficheBack"><i data-ic="retour"></i><span data-i18n="allSons">Tous les sons</span></button></div>
     <div id="ficheBody"></div>
+  </div>
+</section>
+
+<!-- LES VERBES -->
+<section id="verbes" class="screen">
+  <div class="wrap">
+    <div class="top"><button class="retour" id="verbesHome"><i data-ic="retour"></i><span data-i18n="home">Accueil</span></button></div>
+    <h1 data-i18n="verbes_h">Les verbes</h1>
+    <p class="sub" data-i18n="verbes_sub">La terminaison en couleur : c'est elle qui change à chaque personne.</p>
+    <div id="verbesBody"></div>
   </div>
 </section>
 
 <!-- SESSION -->
 <section id="session" class="screen">
-  <div class="hud"><span id="hudPos"></span><span><span class="chrono" id="hudChrono">0:00</span><button class="stop" id="stopBtn" title="Arrêter">✕</button></span></div>
+  <div class="hud"><span id="hudPos"></span><span><span class="chrono" id="hudChrono">0:00</span><button class="stop" id="stopBtn" title="Arrêter"><i data-ic="stop"></i></button></span></div>
   <div class="center">
     <div id="stage"></div>
     <div class="bar" id="bar"><i></i></div>
     <div class="hint" id="hint"></div>
-    <div class="touch" id="touch"><button class="btn again" id="tRevoir">👀 Revoir</button><button class="btn" id="tSuivant">✅ Suivant</button></div>
+    <div class="touch" id="touch"><button class="btn ghost" id="tRevoir">Revoir</button><button class="btn jeu" id="tSuivant">Suivant</button></div>
     <div class="dots" id="dots"></div>
   </div>
 </section>
@@ -294,11 +454,11 @@
 <!-- CORRECTION -->
 <section id="review" class="screen">
   <div class="wrap">
-    <h1><span data-i18n="bravo">Bravo, c'est fini !</span> 🎉</h1>
+    <h1 data-i18n="bravo">Bravo, c'est fini !</h1>
     <p class="sub" id="reviewSub">Compare avec ton cahier. Touche un mot s'il a une faute.</p>
     <div class="list" id="reviewList"></div>
     <div class="row">
-      <button class="btn" id="saveBtn" data-i18n="save">Enregistrer</button>
+      <button class="btn jeu" id="saveBtn" data-i18n="save">Enregistrer</button>
       <span class="note" id="reviewCount"></span>
     </div>
   </div>
@@ -307,14 +467,14 @@
 <!-- RÉSUMÉ -->
 <section id="summary" class="screen">
   <div class="wrap center">
-    <div class="bigemoji" id="sumEmoji"></div>
+    <div class="fete" id="sumEmoji"></div>
     <div class="msg" id="sumMsg"></div>
     <p class="note" id="sumSub"></p>
     <div class="cards" id="sumCards"></div>
     <div class="row">
-      <button class="btn" id="again" data-i18n="again">Encore une !</button>
+      <button class="btn jeu" id="again" data-i18n="again">Encore une !</button>
       <button class="btn ghost" id="sumHome" data-i18n="home">Accueil</button>
-      <button class="btn ghost" id="sumStats">📊 <span data-i18n="toStats">Statistiques</span></button>
+      <button class="btn ghost" id="sumStats"><i data-ic="stats"></i><span data-i18n="toStats">Statistiques</span></button>
     </div>
   </div>
   <div class="ref" id="sumRef"></div>
@@ -323,12 +483,13 @@
 <!-- STATS -->
 <section id="stats" class="screen">
   <div class="wrap">
-    <h1>📊 <span data-i18n="stats_h">Statistiques</span></h1>
+    <div class="top"><button class="retour" id="statsHome"><i data-ic="retour"></i><span data-i18n="home">Accueil</span></button></div>
+    <h1 data-i18n="stats_h">Statistiques</h1>
     <p class="sub"><span data-i18n="stats_sub">Toutes les sessions. Clique sur une ligne pour voir le détail mot par mot.
-      Fichiers :</span> <code id="csvPath"></code> <button class="btn small ghost" id="openFolder" data-i18n="openFolder">Ouvrir le dossier</button></p>
-    <div class="row" style="margin:0 0 16px">
-      <button class="btn ghost small" id="statsHome">← <span data-i18n="home">Accueil</span></button>
+      Fichiers :</span> <code id="csvPath"></code></p>
+    <div class="stats-tete">
       <span class="note" id="statsSummary"></span>
+      <button class="btn small ghost" id="openFolder"><i data-ic="dossier"></i><span id="openFolderTxt" data-i18n="openFolder">Ouvrir le dossier</span></button>
     </div>
     <div class="tablewrap"><table id="statsTable"></table></div>
   </div>
@@ -341,13 +502,15 @@
 <script src="syllabes.js"></script>
 <script src="sons.js"></script>
 <script src="sons_mots.js"></script>
+<script src="verbes.js"></script>
 <script src="definitions.js"></script>
 <script>if (LANG === "pt") document.write('<script src="definitions_pt.js"><\/script><script src="sons_pt.js"><\/script>');</script>
 <script>
 const $ = s => document.querySelector(s);
 const SHOW_MS = 3000, PAUSE_MS = 1000;
-const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier", mots: "hasard", sons: new Set() };
-const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée" }; // valeurs du CSV : toujours en français
+const state = { mode: "cachee", niveau: "CE1", nb: 5, saisie: "cahier", mots: "hasard", sons: new Set(),
+                temps: new Set(["present"]), groupes: new Set(["g1"]) };
+const MODES = { cachee: "Copie cachée", flash: "Copie flash", dictee: "Dictée", conj: "Conjugaison" }; // valeurs du CSV : toujours en français
 let S = null; // session en cours
 
 function show(id) { document.querySelectorAll(".screen").forEach(e => e.classList.remove("on")); $("#"+id).classList.add("on"); }
@@ -361,7 +524,70 @@ const NIV_OF = {}; NIVEAUX.forEach((L, k) => MOTS[L].forEach(w => { NIV_OF[w] = 
 function fmt(s) { s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
 function fmt1(x) { return (Math.round(x*10)/10).toLocaleString(LANG === "pt" ? "pt-BR" : "fr-FR"); }
 
-// ---- Accueil ----
+// ---- Icônes (dessinées, trait 2px) ----
+const IC = {
+  retour: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  go: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  sons: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+  livre: '<path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5V20"/>',
+  stats: '<path d="M5 20v-8M12 20V5M19 20v-5"/>',
+  crayon: '<path d="M14.5 5.5l4 4L8 20H4v-4z"/><path d="M12.5 7.5l4 4"/>',
+  clavier: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10.5 10h.01M14.5 10h.01M17.5 10h.01M8 14h8"/>',
+  voix: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  muet: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M16 10l4 4M20 10l-4 4"/>',
+  stop: '<path d="M6 6l12 12M18 6L6 18"/>',
+  oeil: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+  suivant: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  poubelle: '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/>',
+  melange: '<path d="M3 7h3.5L17 17h4M3 17h3.5l3-3M14 10l3-3h4M18.5 4.5 21 7l-2.5 2.5M18.5 14.5 21 17l-2.5 2.5"/>',
+  dossier: '<path d="M3 7.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  de: '<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M9 9h.01M15 15h.01M15 9h.01M9 15h.01" stroke-width="2.8"/>',
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n]}</svg>`;
+document.querySelectorAll("[data-ic]").forEach(e => { e.outerHTML = ic(e.dataset.ic); });
+
+// ---- Les petits êtres : un par jeu, forme pleine et deux yeux, posé sur le sol (bas du dessin) ----
+const ETRES = {
+  cachee: { c: "var(--sun)",   forme: '<path d="M6 112a54 54 0 0 1 108 0z"/>', yeux: [[45, 88], [75, 88]], bouche: [60, 101] },
+  flash:  { c: "var(--sea)",   forme: '<path d="M60 18 108 106H12z" stroke-width="12" stroke-linejoin="round"/>', yeux: [[50, 78], [70, 78]], bouche: [60, 92] },
+  dictee: { c: "var(--pink)",  forme: '<circle cx="60" cy="64" r="48"/>', yeux: [[45, 56], [75, 56]], bouche: [60, 79] },
+  conj:   { c: "var(--brick)", forme: '<path d="M8 112V60A50 50 0 0 1 58 10h14a40 40 0 0 1 40 40v62z"/>', yeux: [[50, 52], [78, 52]], bouche: [64, 73] },
+};
+// humeur : "eveil" (yeux ronds), "bas" (regarde le cahier), "dort" (yeux fermés), "parle" (bouche ouverte, ondes), "fete" (yeux plissés, sourire)
+function etre(jeu, { humeur = "eveil", delai = 0 } = {}) {
+  const E = ETRES[jeu] || ETRES.cachee, ink = "#141414", dy = humeur === "bas" ? 4 : 0;
+  const yeux = E.yeux.map(([x, y]) =>
+    humeur === "dort" ? `<path class="oeil" d="M${x - 6} ${y}h12" stroke="${ink}" stroke-width="4.5" stroke-linecap="round"/>`
+    : humeur === "fete" ? `<path class="oeil" d="M${x - 7} ${y + 3}q7-9 14 0" fill="none" stroke="${ink}" stroke-width="4.5" stroke-linecap="round"/>`
+    : `<circle class="oeil" cx="${x}" cy="${y + dy}" r="6" fill="${ink}"/>`).join("");
+  const [bx, by] = E.bouche;
+  const bouche = humeur === "parle" ? `<ellipse cx="${bx}" cy="${by}" rx="6" ry="8" fill="${ink}"/>`
+    : humeur === "fete" ? `<path d="M${bx - 11} ${by - 3}q11 12 22 0" fill="none" stroke="${ink}" stroke-width="4.5" stroke-linecap="round"/>` : "";
+  const ondes = humeur === "parle" ? `<g class="ondes" fill="none" stroke="${ink}" stroke-width="4" stroke-linecap="round"><path d="M118 54q8 10 0 20"/><path d="M128 46q14 18 0 36"/><path d="M138 38q20 26 0 52"/></g>` : "";
+  return `<svg class="etre-svg" viewBox="${humeur === "parle" ? "0 0 160 112" : "0 0 120 112"}" aria-hidden="true" style="--d:${delai}s">`
+    + `<g style="fill:${E.c};stroke:${E.c}" stroke-width="0">${E.forme}</g><g class="regard"><g class="paupieres">${yeux}</g></g>${bouche}${ondes}</svg>`;
+}
+
+// ---- Réglages mémorisés : un adulte règle une fois, l'enfant n'a plus qu'à lancer ----
+const REG = "copieflash.reglages";
+function saveReg() {
+  try { localStorage.setItem(REG, JSON.stringify({ niveau: state.niveau, nb: state.nb, saisie: state.saisie, mots: state.mots,
+    sons: [...state.sons], temps: [...state.temps], groupes: [...state.groupes] })); } catch {}
+}
+(function loadReg() {
+  let r = null; try { r = JSON.parse(localStorage.getItem(REG) || "null"); } catch {}
+  if (!r) return;
+  if (NIVEAUX.includes(r.niveau)) state.niveau = r.niveau;
+  if ([5, 10, 15, 20].includes(r.nb)) state.nb = r.nb;
+  if (["cahier", "clavier"].includes(r.saisie)) state.saisie = r.saisie;
+  if (["hasard", "sons"].includes(r.mots)) state.mots = r.mots;
+  const remplir = (set, arr, ok) => { const v = (arr || []).filter(ok); if (v.length) { set.clear(); v.forEach(x => set.add(x)); } };
+  remplir(state.sons, r.sons, f => SONS[f] && SONS_MOTS[f]);
+  remplir(state.temps, r.temps, x => TEMPS_IDS.includes(x));
+  remplir(state.groupes, r.groupes, g => ["g1", "g2", "g3"].includes(g));
+})();
+
+// ---- Réglages d'un jeu ----
 function pills(sel, key, values, init) {
   const box = $(sel);
   if (values) box.innerHTML = values.map(v => `<button class="pill${v===init?" sel":""}" data-v="${v}">${v}</button>`).join("");
@@ -371,27 +597,73 @@ function pills(sel, key, values, init) {
     state[key] = key === "nb" ? +b.dataset.v : b.dataset.v;
   });
 }
-pills("#modes", "mode"); pills("#nbs", "nb"); pills("#saisies", "saisie");
+pills("#nbs", "nb"); pills("#saisies", "saisie");
 pills("#niveaux", "niveau", NIVEAUX, state.niveau);
 pills("#motsMode", "mots");
+selPill("#nbs", String(state.nb)); selPill("#saisies", state.saisie); selPill("#motsMode", state.mots);
 function majAccueil() {
   $("#voixChoice").hidden = state.mode === "dictee";
   $("#motsChoice").hidden = state.mode !== "dictee";
   $("#sonsPick").hidden = state.mots !== "sons";
+  $("#conjTemps").hidden = $("#conjVerbes").hidden = state.mode !== "conj";
 }
-$("#modes").addEventListener("click", majAccueil); $("#motsMode").addEventListener("click", majAccueil);
+$("#motsMode").addEventListener("click", majAccueil);
+
+// Conjugaison : choix des temps et des groupes de verbes (plusieurs possibles, comme les sons).
+$("#tempsPick").innerHTML = TEMPS_IDS.map(id => `<button class="pill${state.temps.has(id) ? " sel" : ""}" data-v="${id}">${t("temps_" + id)}</button>`).join("");
+$("#groupesPick").innerHTML = ["g1", "g2", "g3"].map(g => `<button class="pill${state.groupes.has(g) ? " sel" : ""}" data-v="${g}">${t("gr_" + g)}</button>`).join("");
+function multiPick(sel, set) {
+  $(sel).onclick = e => {
+    const b = e.target.closest(".pill"); if (!b) return;
+    const v = b.dataset.v; set.has(v) ? set.delete(v) : set.add(v);
+    b.classList.toggle("sel", set.has(v));
+  };
+}
+multiPick("#tempsPick", state.temps); multiPick("#groupesPick", state.groupes);
 // Dictée « avec des sons » : plusieurs fiches possibles (pas les sons proches, qui n'ont pas de liste de mots).
 $("#sonsPick").innerHTML = SONS_SECTIONS.flatMap(s => s.fiches).filter(f => SONS_MOTS[f])
-  .map(f => `<button class="pill" data-f="${f}">${SONS[f].court}</button>`).join("");
+  .map(f => `<button class="pill${state.sons.has(f) ? " sel" : ""}" data-f="${f}">${SONS[f].court}</button>`).join("");
 $("#sonsPick").onclick = e => {
   const b = e.target.closest(".pill"); if (!b) return;
   const f = b.dataset.f; state.sons.has(f) ? state.sons.delete(f) : state.sons.add(f);
   b.classList.toggle("sel", state.sons.has(f));
 };
 function selPill(box, v) { $(box).querySelectorAll(".pill").forEach(p => p.classList.toggle("sel", p.dataset.v === v)); }
-$("#voix").addEventListener("click", e => { if (e.target.closest(".pill")) Voix.toggle(e.target.closest(".pill").dataset.v === "1"); });
+$("#voix").addEventListener("click", e => { const b = e.target.closest(".pill"); if (!b) return; Voix.toggle(b.dataset.v === "1"); selPill("#voix", b.dataset.v); });
+$("#setup").addEventListener("click", saveReg); // après les boutons (bouillonnement) : l'état est déjà à jour
+
+// ---- Accueil : on choisit un jeu en touchant son petit être ----
+const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.querySelectorAll("#games .etre").forEach((b, k) => { b.querySelector(".corps").innerHTML = etre(b.dataset.v, { delai: k * 1.7 }); });
+// Leurs yeux suivent la souris, ou le doigt.
+function regarder(e) {
+  if (!$("#home").classList.contains("on")) return;
+  document.querySelectorAll("#games .regard").forEach(g => {
+    const r = g.ownerSVGElement.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * .55), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260) * 5;
+    g.style.setProperty("--lx", (dx / d * k).toFixed(1) + "px"); g.style.setProperty("--ly", (dy / d * k).toFixed(1) + "px");
+  });
+}
+document.addEventListener("pointermove", regarder, { passive: true });
+document.addEventListener("pointerdown", regarder, { passive: true });
+$("#games").onclick = e => {
+  const b = e.target.closest(".etre"); if (!b) return;
+  b.classList.remove("saute"); void b.offsetWidth; b.classList.add("saute");
+  const clavier = e.detail === 0; // activé au clavier (Entrée/Espace), pas à la souris ni au doigt
+  setTimeout(() => { b.classList.remove("saute"); ouvrirJeu(b.dataset.v, clavier); }, reduit ? 0 : 300);
+};
+function ouvrirJeu(mode, clavier = true) {
+  state.mode = mode; document.body.dataset.jeu = mode;
+  $("#setupEtre").innerHTML = etre(mode);
+  $("#setupNom").textContent = t("m_" + mode); $("#setupDit").textContent = t("m_" + mode + "_s");
+  majAccueil(); show("setup"); window.scrollTo(0, 0);
+  // au clavier, le focus va sur « C'est parti ! » ; à la souris ou au doigt, pas d'anneau (Entrée lance quand même)
+  if (clavier) $("#go").focus({ preventScroll: true }); else document.activeElement?.blur();
+}
 $("#go").onclick = startSession;
+$("#setupBack").onclick = () => show("home");
 $("#toSons").onclick = showSons; $("#sonsHome").onclick = () => show("home"); $("#ficheBack").onclick = showSons;
+$("#toVerbes").onclick = showVerbes; $("#verbesHome").onclick = () => show("home");
 $("#toStats").onclick = showStats; $("#sumStats").onclick = showStats;
 $("#statsHome").onclick = () => show("home"); $("#sumHome").onclick = () => show("home");
 $("#again").onclick = startSession;
@@ -431,6 +703,48 @@ function pickWordsSons(niveau, n, fiches) {
   return shuffle(out);
 }
 
+// ---- Conjugaison : pioche de verbes (verbe × temps × personne) ----
+// Infinitifs disponibles pour les groupes choisis, jusqu'au niveau choisi (verbes.js).
+function verbPool(niveau, groupes) {
+  const k0 = NIVEAUX.indexOf(niveau), upto = L => NIVEAUX.indexOf(L) <= k0, pool = [];
+  if (groupes.includes("g1")) NIVEAUX.forEach(L => { if (upto(L)) pool.push(...(VERBES_G1[L] || [])); });
+  if (groupes.includes("g2")) NIVEAUX.forEach(L => { if (upto(L)) pool.push(...(VERBES_G2[L] || [])); });
+  if (groupes.includes("g3")) for (const inf in VERBES_IRR) if (upto(VERBES_IRR[inf].niv)) pool.push(inf);
+  return pool;
+}
+// Pronom affiché : il/elle/on et ils/elles au hasard (même terminaison). Au passé composé des verbes
+// en être, le pronom fixe le genre (elle → allée), donc on le choisit selon le genre tiré.
+function pronom(p, gen, etrePC) {
+  if (p === 0) return "je"; if (p === 1) return "tu"; if (p === 3) return "nous"; if (p === 4) return "vous";
+  if (p === 2) return etrePC ? (gen === "f" ? "elle" : "il") : ["il", "elle", "on"][Math.floor(Math.random() * 3)];
+  return etrePC ? (gen === "f" ? "elles" : "ils") : (Math.random() < 0.5 ? "ils" : "elles");
+}
+// Une carte = { inf, temps, forme (réponse attendue), hl (terminaison colorée), pron, tempsLabel, ctx }.
+function pickVerbs(niveau, n, temps, groupes) {
+  const pool = verbPool(niveau, groupes);
+  if (!pool.length || !temps.length) return [];
+  let last = []; try { last = JSON.parse(localStorage.getItem("last_conj") || "[]"); } catch {}
+  const lastSet = new Set(last), seen = new Set(), cards = [], keys = [];
+  for (let guard = 0; cards.length < n && guard < n * 60; guard++) {
+    const inf = pool[Math.floor(Math.random() * pool.length)];
+    const tmp = temps[Math.floor(Math.random() * temps.length)];
+    const irr = VERBES_IRR[inf];
+    const etrePC = tmp === "passecompose" && (irr ? irr.aux === "être" : AUX_ETRE.has(inf));
+    let p, gen = "m";
+    if (etrePC) { p = Math.random() < 0.5 ? 2 : 5; gen = Math.random() < 0.5 ? "m" : "f"; } // il/elle/ils/elles : réponse unique
+    else p = Math.floor(Math.random() * 6);
+    const key = `${inf}|${tmp}|${p}|${gen}`;
+    if (seen.has(key)) continue;
+    if (lastSet.has(key) && guard < n * 40 && seen.size < pool.length) continue; // éviter de refaire la carte de la veille
+    seen.add(key); keys.push(key);
+    const { forme, hl } = Conj.conjugue(inf, tmp, p, { gen });
+    const pron = pronom(p, gen, etrePC), label = t("temps_" + tmp);
+    cards.push({ inf, temps: tmp, forme, hl, pron, tempsLabel: label, ctx: `${pron} · ${inf} · ${label}` });
+  }
+  try { localStorage.setItem("last_conj", JSON.stringify(keys)); } catch {}
+  return shuffle(cards);
+}
+
 // ---- Session ----
 let timers = [], chronoTimer = null;
 function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
@@ -438,25 +752,37 @@ function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
 function startSession() {
   if (state.mode === "dictee" && !Voix.dispo()) { alert(t("noVoice")); return; }
+  const conj = state.mode === "conj";
   const sons = state.mode === "dictee" && state.mots === "sons" ? Object.keys(SONS).filter(f => state.sons.has(f)) : null;
   if (sons && !sons.length) { alert(t("pickSon")); return; }
+  let cards = null;
+  if (conj) {
+    if (!state.temps.size) { alert(t("pickTemps")); return; }
+    if (!state.groupes.size) { alert(t("pickGroupe")); return; }
+    cards = pickVerbs(state.niveau, state.nb, [...state.temps], [...state.groupes]);
+    if (!cards.length) { alert(t("noVerb")); return; }
+  }
   Voix.unlock();
-  const picked = sons ? pickWordsSons(state.niveau, state.nb, sons) : pickWords(state.niveau, state.nb);
+  const picked = conj ? cards : sons ? pickWordsSons(state.niveau, state.nb, sons) : pickWords(state.niveau, state.nb);
   S = {
     mode: state.mode, niveau: state.niveau, nb: picked.length, clavier: state.saisie === "clavier", draft: "", sons,
-    words: picked.map(m => ({ mot: brut(m), hl: sons ? m : null, lettres: lettres(m), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" })),
+    conj: conj ? { temps: [...state.temps], groupes: [...state.groupes] } : null,
+    words: conj
+      ? cards.map(c => ({ mot: c.forme, hl: c.hl, inf: c.inf, pron: c.pron, tempsLabel: c.tempsLabel, ctx: c.ctx, lettres: lettres(c.forme), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" }))
+      : picked.map(m => ({ mot: brut(m), hl: sons ? m : null, lettres: lettres(m), revoirs: 0, hiddenAt: null, duree: 0, faute: false, reponse: "" })),
     i: 0, phase: "pause", start: null, end: null, revoirs: 0, dateStart: new Date()
   };
   show("session");
   $("#hudChrono").textContent = "0:00";
   $("#dots").innerHTML = S.words.map(() => "<i></i>").join("");
-  stage(`<div class="pencil">✏️</div><div class="hint">${S.mode === "dictee" ? t("pen_dictee") : t("pen")}</div>`);
+  document.body.dataset.jeu = S.mode;
+  stage(`<div class="compagnon">${etre(S.mode)}</div><div class="hint">${S.mode === "dictee" ? t("pen_dictee") : t("pen")}</div>`);
   $("#bar").style.visibility = "hidden"; $("#hint").textContent = ""; touch(false);
-  $("#tRevoir").textContent = S.mode === "dictee" ? "🔊 " + t("reecouter") : "👀 " + t("revoir");
+  $("#tRevoir").innerHTML = (S.mode === "dictee" || S.mode === "conj") ? ic("voix") + t("reecouter") : ic("oeil") + t("revoir");
   updateHud();
   if (S.mode === "dictee" || Voix.on) Voix.prep(S.words.map(w => w.mot));
   if (S.mode === "dictee") Voix.prep(S.words.map(w => w.mot), true);
-  later(() => showWord(false), 2000);
+  later(() => showWord(false), conj ? 1200 : 2000);
 }
 
 function stage(html) { $("#stage").innerHTML = html; }
@@ -472,6 +798,7 @@ function fitSize(w) {
 function showWord(again) {
   const w = S.words[S.i];
   if (S.mode === "dictee") return ecoute(again);
+  if (S.mode === "conj") return conjPrompt(again);
   S.phase = "showing";
   if (Voix.on) Voix.dire(w.mot);
   stage(`<div class="word" style="font-size:${fitSize(w.mot)}">${Syllabes.html(w.mot)}</div>`);
@@ -481,12 +808,39 @@ function showWord(again) {
   later(hideWord, SHOW_MS);
 }
 
-function hideWord() {
-  const w = S.words[S.i];
-  S.phase = "hidden";
+// Démarre le temps « elle écrit » (du 1er masquage à la validation) et le chrono.
+function startWriting(w) {
   const now = performance.now();
   if (w.hiddenAt === null) w.hiddenAt = now;
   if (S.start === null) { S.start = now; chronoTimer = setInterval(() => { $("#hudChrono").textContent = fmt((performance.now()-S.start)/1000); }, 500); }
+}
+
+// Conjugaison : la consigne (pronom + infinitif + temps) reste affichée pendant qu'elle écrit la forme.
+function conjPrompt(again) {
+  const w = S.words[S.i];
+  if (again) { if (Voix.on) Voix.dire(w.mot); return; } // « réécouter » : on redit juste la forme
+  S.phase = "hidden"; // même état « elle écrit » qu'après hideWord (suivant / revoir marchent)
+  const prompt = `<div class="cprompt"><span class="cpron">${esc(w.pron)}</span> <span class="cinf">${esc(w.inf)}</span><span class="ctemps">${esc(w.tempsLabel)}</span></div>`;
+  const again2 = t("again_ecoute");
+  if (S.clavier) {
+    stage(`${prompt}<input class="rep" id="rep" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" value="${S.draft.replace(/"/g, "&quot;")}">`);
+    $("#hint").innerHTML = `<kbd>${t("k_enter")}</kbd> ${t("valider")}` + (Voix.on ? ` &nbsp;&nbsp; <kbd>Tab</kbd> ${again2}` : "");
+    $("#rep").focus();
+  } else {
+    stage(`${prompt}<div class="compagnon">${etre("conj", { humeur: "bas" })}</div>`);
+    $("#hint").innerHTML = (Voix.on ? `<kbd>${t("k_space")}</kbd> ${again2} &nbsp;&nbsp; ` : "") + `<kbd>${t("k_enter")}</kbd> ${t("motSuivant")}`;
+  }
+  $("#bar").style.visibility = "hidden";
+  startWriting(w);
+  touch(true);
+  updateHud();
+  if (Voix.on) Voix.dire(w.mot);
+}
+
+function hideWord() {
+  const w = S.words[S.i];
+  S.phase = "hidden";
+  startWriting(w);
   $("#bar").style.visibility = "hidden";
   const again = S.mode === "dictee" ? t("again_ecoute") : t("again_revoir");
   if (S.clavier) {
@@ -494,7 +848,8 @@ function hideWord() {
     $("#hint").innerHTML = `<kbd>${t("k_enter")}</kbd> ${t("valider")}` + (S.mode !== "flash" ? ` &nbsp;&nbsp; <kbd>Tab</kbd> ${again}` : "");
     $("#rep").focus();
   } else {
-    stage(`<div class="pencil">✍️</div>`);
+    // la copie cachée ferme les yeux (le mot est caché) ; les autres regardent le cahier
+    stage(`<div class="compagnon">${etre(S.mode, { humeur: S.mode === "cachee" ? "dort" : "bas" })}</div>`);
     $("#hint").innerHTML = S.mode === "flash" ? `<kbd>${t("k_space")}</kbd> ${t("fini")}`
       : `<kbd>${t("k_space")}</kbd> ${again} &nbsp;&nbsp; <kbd>${t("k_enter")}</kbd> ${t("motSuivant")}`;
   }
@@ -504,7 +859,7 @@ function hideWord() {
 async function ecoute(again) {
   const w = S.words[S.i], me = S;
   S.phase = again ? "hidden" : "listening";
-  stage(`<div class="ear">🔊</div>`); $("#hint").textContent = t("listen"); touch(false);
+  stage(`<div class="compagnon parle">${etre("dictee", { humeur: "parle" })}</div>`); $("#hint").textContent = t("listen"); touch(false);
   updateHud();
   await Voix.dire(w.mot, !again);
   if (S !== me || S.phase === "done") return;
@@ -512,10 +867,14 @@ async function ecoute(again) {
   hideWord();
 }
 // Boutons tactiles (iPhone / trackpad) : mêmes actions que les touches.
-function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode === "flash"; }
-function revoir() { if (S && S.phase === "hidden" && S.mode !== "flash") { S.draft = $("#rep")?.value || ""; S.words[S.i].revoirs++; S.revoirs++; showWord(true); } }
+function touch(on) { $("#touch").classList.toggle("on", on); $("#tRevoir").hidden = S.mode === "flash" || (S.mode === "conj" && !Voix.on); }
+function revoir() {
+  if (!S || S.phase !== "hidden" || S.mode === "flash") return;
+  if (S.mode === "conj") { if (!Voix.on) return; S.words[S.i].revoirs++; S.revoirs++; Voix.dire(S.words[S.i].mot); return; }
+  S.draft = $("#rep")?.value || ""; S.words[S.i].revoirs++; S.revoirs++; showWord(true);
+}
 function suivant() { if (S && S.phase === "hidden") { Voix.stop(); validate(); } }
-function stop() { if (S && confirm(t("stopConfirm"))) { clearTimers(); clearInterval(chronoTimer); Voix.stop(); S = null; show("home"); } }
+function stop() { if (S && confirm(t("stopConfirm"))) { clearTimers(); clearInterval(chronoTimer); Voix.stop(); S = null; show("setup"); } }
 $("#tRevoir").onclick = revoir; $("#tSuivant").onclick = suivant; $("#stopBtn").onclick = stop;
 
 const norm = t => t.trim().toLowerCase().replace(/’/g, "'").replace(/\s+/g, " ");
@@ -537,7 +896,12 @@ function validate() {
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && $("#fiche").classList.contains("on")) { showSons(); return; }
-  if (e.key === "Escape" && $("#sons").classList.contains("on")) { show("home"); return; }
+  if (e.key === "Escape" && ["sons", "verbes", "stats"].some(id => $("#" + id).classList.contains("on"))) { show("home"); return; }
+  if ($("#setup").classList.contains("on")) { // Entrée lance le jeu (sauf sur un bouton de réglage), Échap revient aux jeux
+    if (e.key === "Escape") show("home");
+    else if (e.key === "Enter" && !document.activeElement?.closest?.("button")) { e.preventDefault(); startSession(); }
+    return;
+  }
   if (!$("#session").classList.contains("on") || !S) return;
   if (e.key === "Escape") { stop(); return; }
   if (S.clavier) { // le champ reçoit les lettres et l'espace ; Entrée valide, Tab fait revoir/réécouter
@@ -555,6 +919,8 @@ function review() {
   show("review");
   $("#reviewSub").textContent = S.clavier
     ? t("rev_clavier")
+    : S.mode === "conj"
+    ? t("rev_conj")
     : S.mode === "dictee"
     ? t("rev_dictee")
     : t("rev_sub");
@@ -563,9 +929,10 @@ function review() {
   // Chaque mot vient avec sa définition courte (definitions.js), pour apprendre le sens en corrigeant.
   // En portugais : la définition est traduite (definitions_pt.js) ; à défaut, on garde la française.
   const D = typeof DEFS_PT !== "undefined" ? { ...DEFS, ...DEFS_PT } : typeof DEFS !== "undefined" ? DEFS : {};
-  const def = m => D[m] ? `<span class="def">${esc(D[m])}</span>` : "";
-  list.classList.toggle("defs", typeof DEFS !== "undefined");
-  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">${esc(t("typed", w.reponse))}</span>` : ""}${def(w.mot)}</span><span class="n">${w.lettres} ${t("lettresAbr")}</span></div>`).join("");
+  // Conjugaison : la ligne sous la forme rappelle la consigne (pronom · infinitif · temps) au lieu d'une définition.
+  const sous = w => w.ctx ? `<span class="def">${esc(w.ctx)}</span>` : (D[w.mot] ? `<span class="def">${esc(D[w.mot])}</span>` : "");
+  list.classList.toggle("defs", typeof DEFS !== "undefined" || S.mode === "conj");
+  list.innerHTML = S.words.map((w, k) => `<div class="item${w.faute ? " bad" : ""}" data-k="${k}"><span><span class="w">${w.hl ? marque(w.hl) : Syllabes.html(w.mot)}</span>${S.clavier && w.faute ? `<span class="typed">${esc(t("typed", w.reponse))}</span>` : ""}${sous(w)}</span><span class="n">${w.lettres} ${t("lettresAbr")}</span></div>`).join("");
   list.onclick = e => {
     const it = e.target.closest(".item"); if (!it) return;
     const w = S.words[+it.dataset.k]; w.faute = !w.faute; it.classList.toggle("bad", w.faute);
@@ -584,8 +951,9 @@ $("#saveBtn").onclick = async () => {
   const d = S.dateStart;
   const payload = {
     date: d.toISOString().slice(0,10), heure: d.toTimeString().slice(0,5),
-    // les dictées de sons ont leurs propres records : « Dictée · [o] [an] »
-    mode: MODES[S.mode] + (S.sons ? " · " + S.sons.map(f => SONS[f].nom).join(" ") : "") + (S.clavier ? " (clavier)" : ""),
+    // les dictées de sons et les conjugaisons ont leurs propres records : « Dictée · [o] », « Conjugaison · présent »
+    mode: MODES[S.mode] + (S.sons ? " · " + S.sons.map(f => SONS[f].nom).join(" ") : "")
+      + (S.conj ? " · " + S.conj.temps.map(id => TEMPS_FR[id]).join(" ") : "") + (S.clavier ? " (clavier)" : ""),
     niveau: S.niveau, nb_mots: S.nb,
     duree_s: Math.round(total*10)/10, ecriture_s: Math.round(ecriture*10)/10, lettres: nl,
     lettres_par_min: Math.round(nl / (ecriture/60) * 10)/10,
@@ -609,7 +977,7 @@ const bravos = () => ["b1", "b2", "b3", "b4", "b5"].map(k => t(k));
 function confetti(ms = 4500) {
   const c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c);
   const ctx = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
-  const colors = ["#e8792b", "#2f8f83", "#f2c94c", "#eb5757", "#6fcf97", "#56ccf2", "#bb6bd9"];
+  const colors = ["#ff9f1c", "#1c3fd6", "#ff2d8a", "#ff5a1f", "#141414", "#2f8f83"]; // les petits êtres
   const P = Array.from({ length: 180 }, () => ({
     x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.6, w: 8 + Math.random() * 8, h: 6 + Math.random() * 6,
     vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3.5, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .2,
@@ -633,24 +1001,27 @@ function summary(p, prev) {
   const best = same.length ? Math.max(...same.map(s => +s.lettres_par_min)) : null;
   const record = best !== null && p.lettres_par_min > best;
   const sansFaute = p.fautes === 0;
-  let msg, sub, emoji;
-  if (record && sansFaute) { emoji = "🏆"; msg = t("recordZero") + bravos()[Math.floor(Math.random() * 5)]; sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
-  else if (record) { emoji = "🏆"; msg = t("recordSpeed"); sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
-  else if (sansFaute && best === null) { emoji = "🌟"; msg = t("first0"); sub = t("first0_s"); }
-  else if (best === null) { emoji = "🌟"; msg = t("first"); sub = t("first_s"); }
-  else if (sansFaute) { emoji = "💪"; msg = t("zero") + bravos()[Math.floor(Math.random() * 5)].toLowerCase(); sub = t("best", fmt1(best)); }
-  else { emoji = "🙂"; msg = t("nice"); sub = t("best", fmt1(best)); }
-  const em = $("#sumEmoji"); em.textContent = emoji; em.className = "bigemoji"; void em.offsetWidth; if (record || sansFaute) em.classList.add("bounce");
+  let msg, sub;
+  if (record && sansFaute) { msg = t("recordZero") + bravos()[Math.floor(Math.random() * 5)]; sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
+  else if (record) { msg = t("recordSpeed"); sub = t("avantApres", fmt1(best), fmt1(p.lettres_par_min)); }
+  else if (sansFaute && best === null) { msg = t("first0"); sub = t("first0_s"); }
+  else if (best === null) { msg = t("first"); sub = t("first_s"); }
+  else if (sansFaute) { msg = t("zero") + bravos()[Math.floor(Math.random() * 5)].toLowerCase(); sub = t("best", fmt1(best)); }
+  else { msg = t("nice"); sub = t("best", fmt1(best)); }
+  // le petit être du jeu fête le résultat (yeux plissés et sourire quand il y a un record ou zéro faute)
+  const jeu = S ? S.mode : Object.keys(MODES).find(k => p.mode.startsWith(MODES[k])) || "cachee";
+  document.body.dataset.jeu = jeu;
+  const em = $("#sumEmoji"); em.innerHTML = etre(jeu, { humeur: record || sansFaute ? "fete" : "eveil" }); em.className = "fete" + (record || sansFaute ? " bounce" : "");
   $("#sumMsg").textContent = msg; $("#sumMsg").classList.toggle("record", record); $("#sumSub").textContent = sub;
   if (record || sansFaute) confetti(record && sansFaute ? 6000 : 4500);
   const R = REPERES[p.niveau];
-  $("#sumRef").textContent = R && !p.mode.includes("clavier") ? t("ref", p.niveau, R[0], R[1], R[2], fmt1(p.lettres_par_min)) : "";
+  $("#sumRef").textContent = R && !p.mode.includes("clavier") && !p.mode.startsWith("Conjugaison") ? t("ref", p.niveau, R[0], R[1], R[2], fmt1(p.lettres_par_min)) : "";
   const cards = [
-    ["⏱ " + t("c_time"), fmt(p.ecriture_s)], ["🚀 " + t("c_speed"), fmt1(p.lettres_par_min) + " l/min"],
-    ["🔤 " + t("c_letters"), p.lettres], ["❌ " + t("c_faults"), p.fautes]
+    [t("c_time"), fmt(p.ecriture_s)], [t("c_speed"), fmt1(p.lettres_par_min) + " l/min"],
+    [t("c_letters"), p.lettres], [t("c_faults"), p.fautes]
   ];
-  if (p.mode.startsWith("Copie cachée")) cards.push(["👀 " + t("c_revoirs"), p.revoirs]);
-  if (p.mode.startsWith("Dictée")) cards.push(["🔊 " + t("c_reecoutes"), p.revoirs]);
+  if (p.mode.startsWith("Copie cachée")) cards.push([t("c_revoirs"), p.revoirs]);
+  if (p.mode.startsWith("Dictée") || p.mode.startsWith("Conjugaison")) cards.push([t("c_reecoutes"), p.revoirs]);
   $("#sumCards").innerHTML = cards.map(([l, v]) => `<div class="card"><b>${v}</b><span>${l}</span></div>`).join("");
 }
 
@@ -659,12 +1030,12 @@ async function showStats() {
   show("stats");
   const dir = (await Store.info()).data_dir;
   $("#csvPath").textContent = dir === "sur cet appareil" ? t("onDevice") : dir;
-  $("#openFolder").textContent = Store.mode === "server" ? t("openFolder") : t("exportCsv");
+  $("#openFolderTxt").textContent = Store.mode === "server" ? t("openFolder") : t("exportCsv");
   const rows = (await Store.sessions()).reverse();
   $("#statsSummary").textContent = rows.length ? t("nSessions", rows.length) : t("noSession");
   const tbl = $("#statsTable");
   tbl.innerHTML = `<tr>${t("th").map(h => `<th>${h}</th>`).join("")}<th></th></tr>` +
-    rows.map(r => `<tr class="s" data-id="${r.id}"><td>${r.date} ${r.heure}</td><td>${modeLabel(r.mode)}</td><td>${r.niveau}</td><td>${r.nb_mots}</td><td>${fmt(+r.ecriture_s)}</td><td>${fmt(+r.duree_s)}</td><td>${r.lettres}</td><td><b>${fmt1(+r.lettres_par_min)}</b></td><td>${r.revoirs}</td><td>${r.fautes}</td><td><button class="del" title="${t("delTitle")}" data-del="${r.id}">🗑</button></td></tr>`).join("");
+    rows.map(r => `<tr class="s" data-id="${r.id}"><td>${r.date} ${r.heure}</td><td>${modeLabel(r.mode)}</td><td>${r.niveau}</td><td>${r.nb_mots}</td><td>${fmt(+r.ecriture_s)}</td><td>${fmt(+r.duree_s)}</td><td>${r.lettres}</td><td><b>${fmt1(+r.lettres_par_min)}</b></td><td>${r.revoirs}</td><td>${r.fautes}</td><td><button class="del" title="${t("delTitle")}" data-del="${r.id}">${ic("poubelle")}</button></td></tr>`).join("");
   tbl.onclick = async e => {
     const del = e.target.closest(".del");
     if (del) {
@@ -678,7 +1049,7 @@ async function showStats() {
     if (next && next.classList.contains("d")) { next.remove(); return; }
     const det = await Store.details(tr.dataset.id);
     const d = document.createElement("tr"); d.className = "d";
-    d.innerHTML = `<td colspan="11"><div class="chips">${det.map(w => `<span class="chip${+w.faute?" bad":""}">${Syllabes.html(w.mot)} · ${fmt1(+w.duree_s)} s${+w.revoirs ? " · 👀" + w.revoirs : ""}</span>`).join("")}</div></td>`;
+    d.innerHTML = `<td colspan="11"><div class="chips">${det.map(w => `<span class="chip${+w.faute?" bad":""}"><span>${Syllabes.html(w.mot)}</span> · ${fmt1(+w.duree_s)} s${+w.revoirs ? " · " + ic("oeil") + w.revoirs : ""}</span>`).join("")}</div></td>`;
     tr.after(d);
   };
 }
@@ -729,10 +1100,10 @@ function showFiche(f) {
       <span class="head"><span class="g c${k}">${g.g}${g.sous ? `<small>${g.sous}</small>` : ""}</span>${g.freq ? `<span class="badge f-${g.freq}">${FREQ[g.freq]}</span>` : ""}</span>
       <span class="img">${g.img}</span><span class="mot">${marque(g.mot, "c" + k)}</span><span class="quand">${g.quand}</span></button>`).join("")}</div>`;
   }
-  if (F.astuces.length) h += `<h2 class="sec">💡 ${t("astuces")}</h2><div class="astuces">${F.astuces.map(a => `<div class="astuce"><p>${a}</p></div>`).join("")}</div>`;
+  if (F.astuces.length) h += `<h2 class="sec">${t("astuces")}</h2><div class="astuces">${F.astuces.map(a => `<div class="astuce"><p>${a}</p></div>`).join("")}</div>`;
   if (SONS_MOTS[f]) {
-    h += `<h2 class="sec">${t("autres", state.niveau)} <button class="btn ghost small" id="autresEncore">🔀 ${t("encore")}</button></h2><div class="autres" id="autres">${autresMots(f)}</div>`;
-    h += `<div class="row" style="margin-top:28px"><button class="btn" id="ficheDictee">🔊 ${t("dicteeSon")}</button></div>`;
+    h += `<h2 class="sec">${t("autres", state.niveau)} <button class="btn ghost small" id="autresEncore">${ic("melange")}${t("encore")}</button></h2><div class="autres" id="autres">${autresMots(f)}</div>`;
+    h += `<div class="row" style="margin-top:28px"><button class="btn rose" id="ficheDictee">${ic("voix")}${t("dicteeSon")}</button></div>`;
   }
   $("#ficheBody").innerHTML = h;
   $("#ficheBody").dataset.f = f;
@@ -753,13 +1124,32 @@ $("#ficheBody").onclick = async e => {
   }
   b.classList.remove("dit");
 };
-// Depuis une fiche : l'accueil est réglé sur une dictée de ce son, il n'y a plus qu'à lancer.
+// Depuis une fiche : les réglages de la dictée sont prêts sur ce son, il n'y a plus qu'à lancer.
 function dicteeSur(f) {
-  state.mode = "dictee"; state.mots = "sons"; state.sons = new Set([f]);
-  selPill("#modes", "dictee"); selPill("#motsMode", "sons");
+  state.mots = "sons"; state.sons.clear(); state.sons.add(f);
+  selPill("#motsMode", "sons");
   $("#sonsPick").querySelectorAll(".pill").forEach(p => p.classList.toggle("sel", p.dataset.f === f));
-  majAccueil(); show("home");
-  $("#go").scrollIntoView({ block: "center" });
+  saveReg(); ouvrirJeu("dictee", false);
+}
+
+// ---- Les verbes (verbes.js : VERBES_FICHES, Conj) : une fiche d'apprentissage par temps ----
+const GR_NOM = { g1: "gr_g1", g2: "gr_g2", g3: "gr_g3" };
+function tableauHTML(inf, temps) {
+  const prons = ["je", "tu", "il", "nous", "vous", "ils"];
+  return `<div class="vtable">${Conj.tableau(inf, temps).map((c, p) =>
+    `<span class="vp">${prons[p]}${p === 0 && /^[aeéiouh]/.test(c.forme) ? "’" : ""}</span><span class="vf">${marque(c.hl)}</span>`).join("")}</div>`;
+}
+function showVerbes() {
+  show("verbes"); window.scrollTo(0, 0);
+  $("#verbesBody").innerHTML = VERBES_FICHES.map(F => {
+    const cartes = ["g1", "g2", "g3"].map(g => {
+      const inf = F.modeles[g];
+      return `<div class="vcard"><p class="vgroupe">${t(GR_NOM[g])}</p><h3>${esc(inf)}</h3>${tableauHTML(inf, F.id)}</div>`;
+    }).join("");
+    const pieges = F.pieges.map(p => `<div class="astuce"><p>${esc(p)}</p></div>`).join("");
+    return `<h2 class="sec">${t("temps_" + F.id)}</h2><p class="sub">${esc(F.intro)}</p><div class="vgrid">${cartes}</div>`
+      + `<h2 class="sec">${t("pieges")}</h2><div class="astuces">${pieges}</div>`;
+  }).join("");
 }
 
 // Serveur Python (CSV) si présent, sinon stockage sur l'appareil.
@@ -770,7 +1160,7 @@ Store.init({ key: "copieflash", title: "Copie Flash",
   .then(() => { $("#voix").querySelectorAll(".pill").forEach(b => b.classList.toggle("sel", (b.dataset.v === "1") === Voix.on)); });
 
 applyLang();
-$("#tRevoir").textContent = "👀 " + t("revoir"); $("#tSuivant").textContent = "✅ " + t("suivant");
+$("#tRevoir").innerHTML = ic("oeil") + t("revoir"); $("#tSuivant").innerHTML = ic("suivant") + t("suivant");
 $("#stopBtn").title = t("stop");
 $("#lang").onclick = e => { const b = e.target.closest("button"); if (b && b.dataset.l !== LANG) setLang(b.dataset.l); };
 show("home");

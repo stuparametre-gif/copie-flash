@@ -19,9 +19,22 @@ Petite app locale pour s'entraîner à copier des mots en cursive (copie cachée
 - Les mots sont affichés **en syllabes colorées** (une couleur par syllabe : `syllabes.js`, règles scolaires CP-CE1 approximatives —
   pom-me, ta-ble, mon-ta-gne, vo-ya-ge, po-è-te). Découpage par règles, pas de dictionnaire : quelques mots rares peuvent être coupés bizarrement.
 
+## Accueil et design
+
+L'accueil montre **quatre petits êtres** (formes géométriques à deux yeux) : un par jeu — copie cachée (dôme orange), copie flash
+(triangle bleu), dictée (rond rose), conjugaison (bloc brique). On en touche un : il saute et ouvre un écran court avec **seulement
+les réglages de ce jeu** (niveau, nombre de mots, réponse, voix ; « Mots » pour la dictée ; temps et verbes pour la conjugaison),
+puis **C'est parti !** (ou Entrée). Les réglages sont **mémorisés** sur l'appareil : un adulte règle une fois, l'enfant n'a plus qu'à lancer.
+Échap revient aux jeux. Pendant le jeu, l'être du jeu accompagne l'enfant seulement quand le mot est caché ; il fête un record ou un zéro faute.
+
+- **Intouchable** : la police des mots et les couleurs des syllabes pendant le jeu (voir `DESIGN.md`, règles « Frozen Syllables »).
+- Police de l'interface : **Jost** (SIL OFL), hébergée dans `fonts/` pour marcher hors ligne ; icônes dessinées en SVG dans `index.html` (pas d'emoji).
+- `DESIGN.md` décrit le système (couleurs, typo, composants, à faire / à ne pas faire) ; `PRODUCT.md` le produit. Le dossier `.impeccable/`
+  contient les notes de travail du design (non publiées : GitHub Pages ignore les dossiers commençant par un point).
+
 ## Les sons
 
-Bouton **🔤 Les sons** sur l'accueil : une fiche par son, avec pour chaque façon de l'écrire une image repère
+Lien **Les sons** sur l'accueil : une fiche par son, avec pour chaque façon de l'écrire une image repère
 (bat**eau**, l**in**… touche l'image pour entendre le mot), la règle « quand l'utiliser », des astuces et d'autres mots
 du niveau choisi sur l'accueil. Pas d'exercice ni de stats : c'est une page pour apprendre et revoir.
 
@@ -53,6 +66,37 @@ graphie travaillée est en couleur. Dans les stats, le mode devient « Dictée �
 - `python3 tools/build_defs.py` assemble `definitions.js` et signale les mots sans définition, en double ou trop longs.
   À relancer après toute modification des `.tsv` ou de `mots.js`.
 
+## Conjugaison
+
+Le petit être **Conjugaison** sur l'accueil : une carte = un verbe à conjuguer. L'app affiche la consigne
+**pronom + infinitif + temps** (« nous · chanter · présent »), elle écrit la forme conjuguée (chantons),
+la voix la lit si elle est activée. Même mécanique que la dictée : réponse **sur le cahier** ou **au clavier**
+(vérifiée toute seule, accents compris), **Entrée** valide, **Espace/Tab** réécoute. À la correction, la
+**terminaison est en couleur** et la consigne est rappelée sous chaque verbe.
+
+- **Choix** : un ou plusieurs **temps** (présent, imparfait, futur, passé composé) et un ou plusieurs
+  **groupes** (1er, 2e, 3e). Les verbes sont tirés au niveau choisi et en dessous, avec un pronom au hasard
+  (je, tu, il/elle/on, nous, vous, ils/elles).
+- **Pédagogie** : conjuguer, c'est surtout choisir la bonne terminaison ; on produit la forme (on ne la
+  reconnaît pas dans une liste), une difficulté à la fois, les verbes fréquents d'abord. Le passé composé
+  des verbes en être reste au pronom explicite (il/elle/ils/elles) pour que l'accord ait une seule réponse
+  juste (elle est allée, ils sont partis).
+- Dans les stats, le mode devient « Conjugaison · présent » (ou « · présent futur » si plusieurs temps) :
+  **records séparés**, comme les dictées de sons.
+
+Page **Les verbes** (lien de l'accueil) : une fiche par temps, avec un verbe modèle par groupe (terminaisons
+colorées, calculées par le conjugueur) et les pièges (le -ent muet, -er vs -é, avoir/être au passé composé).
+Pas d'exercice ni de stats : c'est une page pour apprendre et revoir, comme « Les sons ».
+
+- `verbes.js` (modifiable à la main) : les listes d'infinitifs réguliers par niveau (`VERBES_G1`, `VERBES_G2`),
+  la table des verbes irréguliers fréquents (`VERBES_IRR` : présent, radical du futur, participe passé,
+  auxiliaire) et le conjugueur (`Conj`). On n'auto-génère que les formes sûres : les verbes à radical
+  changeant (-eler/-eter/-yer, lever, acheter, espérer…) ne sont **pas** dans les listes régulières ; s'il en
+  faut, les ajouter dans `VERBES_IRR` avec leurs formes écrites.
+- `python3 tools/build_verbes.py [chemin/Lexique383.tsv]` **vérifie** chaque forme produite (présent, imparfait,
+  futur) et chaque participe passé contre Lexique 3.83, pour ne jamais montrer une forme fausse. À relancer après
+  toute modification de `verbes.js` (nécessite Node.js, qui exécute le vrai conjugueur).
+
 ## Interface en portugais du Brésil
 
 Pour des enfants qui apprennent le français : boutons **🇫🇷 Français / 🇧🇷 Português** en haut de l'accueil. Le choix est mémorisé ;
@@ -64,6 +108,8 @@ Pour des enfants qui apprennent le français : boutons **🇫🇷 Français / �
   en portugais pour faire le lien) ; `python3 tools/build_defs.py` produit aussi `definitions_pt.js` et vérifie que tout mot a sa traduction.
   Un mot ajouté à `mots.js` doit donc être défini en français **et** en portugais.
 - Une nouvelle fiche dans `sons.js` reste en français tant qu'elle n'est pas ajoutée à `sons_pt.js`.
+- Conjugaison : l'interface (mode, temps, groupes, boutons) et les messages passent en portugais via `i18n.js` ;
+  les verbes, la voix et les textes de la page « Les verbes » (intros et pièges, dans `verbes.js`) restent en français.
 
 ## Voix
 

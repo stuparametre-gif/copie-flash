@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T14:02:04+02:00",
+  "title": "Design System: Copie Flash",
+  "extensions": {
+    "colorMeta": {
+      "sun": {
+        "role": "primary",
+        "displayName": "Soleil",
+        "canonical": "oklch(78.3% 0.168 66.2)",
+        "tonalRamp": [
+          "#3a0000",
+          "#5c0000",
+          "#7f2700",
+          "#a34a00",
+          "#c76c00",
+          "#ed8e00",
+          "#ffb23a",
+          "#ffd666"
+        ]
+      },
+      "sea": {
+        "role": "primary",
+        "displayName": "Outremer",
+        "canonical": "oklch(46.1% 0.231 265.9)",
+        "tonalRamp": [
+          "#140073",
+          "#0d009b",
+          "#1127c1",
+          "#2751e7",
+          "#4376ff",
+          "#629aff",
+          "#83c0ff",
+          "#a5e5ff"
+        ]
+      },
+      "pink": {
+        "role": "primary",
+        "displayName": "Rose",
+        "canonical": "oklch(66.2% 0.246 0.9)",
+        "tonalRamp": [
+          "#4a000c",
+          "#760024",
+          "#9e0040",
+          "#c7005e",
+          "#ef117d",
+          "#ff4b9f",
+          "#ff74c1",
+          "#ff9be5"
+        ]
+      },
+      "brick": {
+        "role": "primary",
+        "displayName": "Brique",
+        "canonical": "oklch(68.2% 0.211 37.7)",
+        "tonalRamp": [
+          "#4c0000",
+          "#730000",
+          "#990000",
+          "#c10f00",
+          "#e84400",
+          "#ff6a34",
+          "#ff905b",
+          "#ffb580"
+        ]
+      },
+      "syllabe-1": {
+        "role": "secondary",
+        "displayName": "Syllabe orange",
+        "canonical": "oklch(69.1% 0.162 50.9)",
+        "tonalRamp": [
+          "#3e0000",
+          "#610000",
+          "#851b00",
+          "#aa4000",
+          "#cf6300",
+          "#f6853a",
+          "#ffa960",
+          "#ffcd85"
+        ]
+      },
+      "syllabe-2": {
+        "role": "secondary",
+        "displayName": "Syllabe sarcelle",
+        "canonical": "oklch(59.1% 0.090 183.4)",
+        "tonalRamp": [
+          "#001c16",
+          "#003830",
+          "#00574d",
+          "#03766b",
+          "#3a988c",
+          "#5fbaad",
+          "#83ded0",
+          "#a7fff4"
+        ]
+      },
+      "syllabe-3": {
+        "role": "secondary",
+        "displayName": "Syllabe violette",
+        "canonical": "oklch(52.5% 0.157 301.1)",
+        "tonalRamp": [
+          "#210049",
+          "#3b006a",
+          "#58298d",
+          "#774ab0",
+          "#976cd4",
+          "#b98efa",
+          "#dcb1ff",
+          "#ffd5ff"
+        ]
+      },
+      "syllabe-4": {
+        "role": "secondary",
+        "displayName": "Syllabe bleue",
+        "canonical": "oklch(55.7% 0.175 259.2)",
+        "tonalRamp": [
+          "#00005d",
+          "#00197f",
+          "#003ea3",
+          "#1b60c8",
+          "#3f83ed",
+          "#60a6ff",
+          "#82caff",
+          "#a5efff"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Encre",
+        "canonical": "oklch(19.1% 0.000 89.9)",
+        "tonalRamp": [
+          "#121212",
+          "#2b2b2b",
+          "#484848",
+          "#666666",
+          "#868686",
+          "#a8a8a8",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Encre douce",
+        "canonical": "oklch(44.9% 0.010 91.6)",
+        "tonalRamp": [
+          "#13110d",
+          "#2d2b26",
+          "#4a4842",
+          "#686660",
+          "#888680",
+          "#aaa8a1",
+          "#cdcac3",
+          "#f1eee7"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Fond",
+        "canonical": "oklch(95.1% 0.004 106.5)",
+        "tonalRamp": [
+          "#121210",
+          "#2b2b29",
+          "#484845",
+          "#666664",
+          "#868684",
+          "#a8a8a5",
+          "#cbcbc8",
+          "#efefec"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Feuille",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#121212",
+          "#2b2b2b",
+          "#484848",
+          "#666666",
+          "#868686",
+          "#a8a8a8",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "sheet-soft": {
+        "role": "neutral",
+        "displayName": "Feuille douce",
+        "canonical": "oklch(97.2% 0.004 106.5)",
+        "tonalRamp": [
+          "#121210",
+          "#2b2b29",
+          "#484845",
+          "#666664",
+          "#868684",
+          "#a8a8a5",
+          "#cbcbc8",
+          "#efefec"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Trait",
+        "canonical": "oklch(88.2% 0.008 91.5)",
+        "tonalRamp": [
+          "#13120d",
+          "#2d2b27",
+          "#494843",
+          "#686661",
+          "#888681",
+          "#a9a8a2",
+          "#cccac4",
+          "#f0eee8"
+        ]
+      },
+      "alert": {
+        "role": "error",
+        "displayName": "Alerte",
+        "canonical": "oklch(53.0% 0.207 22.3)",
+        "tonalRamp": [
+          "#4b0000",
+          "#720000",
+          "#990001",
+          "#c10028",
+          "#e93d48",
+          "#ff6469",
+          "#ff8a8b",
+          "#ffafad"
+        ]
+      },
+      "alert-bg": {
+        "role": "error",
+        "displayName": "Fond d'alerte",
+        "canonical": "oklch(95.1% 0.022 7.2)",
+        "tonalRamp": [
+          "#1a0d10",
+          "#352729",
+          "#534345",
+          "#726164",
+          "#938184",
+          "#b5a2a5",
+          "#d8c5c8",
+          "#fde9ec"
+        ]
+      },
+      "ok": {
+        "role": "success",
+        "displayName": "Réussi",
+        "canonical": "oklch(51.5% 0.110 156.8)",
+        "tonalRamp": [
+          "#001d00",
+          "#003a12",
+          "#00582e",
+          "#1d784b",
+          "#449a6b",
+          "#68bd8b",
+          "#8be0ad",
+          "#afffd1"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Titre",
+        "purpose": "Le titre « Copie Flash » de l'accueil."
+      },
+      "headline": {
+        "displayName": "Titre de page",
+        "purpose": "Statistiques, Les sons, Bravo, nom du jeu."
+      },
+      "title": {
+        "displayName": "Nom de jeu",
+        "purpose": "Sous chaque être, titres de section."
+      },
+      "body": {
+        "displayName": "Texte",
+        "purpose": "Descriptions et consignes."
+      },
+      "label": {
+        "displayName": "Libellé",
+        "purpose": "Pastilles et boutons."
+      },
+      "mot": {
+        "displayName": "Mot du jeu",
+        "purpose": "Les mots à écrire, la saisie, la correction ; police gelée."
+      }
+    },
+    "shadows": [
+      {
+        "name": "envol",
+        "value": "0 12px 24px -14px rgba(20, 20, 20, .45)",
+        "purpose": "Uniquement sous « C'est parti ! »."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Survol, saut, arrivée des êtres."
+      },
+      {
+        "name": "saut",
+        "value": "300ms",
+        "purpose": "Saut de l'être choisi avant ses réglages."
+      },
+      {
+        "name": "cligne",
+        "value": "7s infinite",
+        "purpose": "Clignement des yeux, décalé par être."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px"
+      },
+      {
+        "name": "tablet",
+        "value": "960px"
+      },
+      {
+        "name": "wide",
+        "value": "1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "C'est parti !",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "Le geste principal des réglages, dans la couleur du jeu choisi.",
+      "html": "<button class=\"ds-go\">C'est parti ! <svg viewBox=\"0 0 24 24\" width=\"28\" height=\"28\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-go{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;display:inline-flex;align-items:center;gap:14px;border:0;border-radius:999px;padding:20px 34px 20px 38px;background:#ff9f1c;color:#141414;font-weight:700;font-size:1.6rem;letter-spacing:-0.01em;box-shadow:0 12px 24px -14px rgba(20,20,20,.45);cursor:pointer;transition:transform .18s cubic-bezier(.16,1,.3,1)}.ds-go:hover{transform:translateY(-2px)}.ds-go:active{transform:translateY(1px);box-shadow:none}.ds-go:focus-visible{outline:3px solid #141414;outline-offset:3px}"
+    },
+    {
+      "name": "Bouton fantôme",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Action secondaire : Accueil, Revoir, Statistiques.",
+      "html": "<button class=\"ds-ghost\">Accueil</button>",
+      "css": ".ds-ghost{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;border:0;border-radius:999px;padding:14px 26px;background:transparent;color:#141414;box-shadow:inset 0 0 0 2px #141414;font-weight:700;font-size:1.15rem;cursor:pointer}.ds-ghost:hover{background:#fff}.ds-ghost:focus-visible{outline:3px solid #141414;outline-offset:3px}"
+    },
+    {
+      "name": "Pastilles de réglage",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Un choix parmi plusieurs ; la choisie prend la couleur du jeu.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill\">CP</button><button class=\"ds-pill ds-sel\">CE1</button><button class=\"ds-pill\">CE2</button></div>",
+      "css": ".ds-pills{display:flex;gap:8px}.ds-pill{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;min-height:48px;padding:10px 20px;border:0;border-radius:999px;background:#fff;color:#141414;font-weight:600;font-size:1.08rem;cursor:pointer}.ds-pill:hover{box-shadow:inset 0 0 0 2px #141414}.ds-pill.ds-sel{background:#ff2d8a;box-shadow:none}.ds-pill:focus-visible{outline:3px solid #141414;outline-offset:3px}"
+    },
+    {
+      "name": "Petit être",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Un jeu = un être en aplat à deux yeux, posé sur le sol ; il monte au survol.",
+      "html": "<button class=\"ds-etre\"><span class=\"ds-corps\"><svg viewBox=\"0 0 120 112\" height=\"150\"><circle cx=\"60\" cy=\"64\" r=\"48\" fill=\"#ff2d8a\"/><circle cx=\"45\" cy=\"56\" r=\"6\" fill=\"#141414\"/><circle cx=\"75\" cy=\"56\" r=\"6\" fill=\"#141414\"/></svg></span><span class=\"ds-nom\">Dictée</span></button>",
+      "css": ".ds-etre{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0;cursor:pointer;width:200px}.ds-corps{width:100%;display:flex;align-items:flex-end;border-bottom:3px solid #141414}.ds-corps svg{display:block;transition:transform .28s cubic-bezier(.16,1,.3,1)}.ds-etre:hover svg{transform:translateY(-8px)}.ds-nom{margin-top:16px;font-size:1.6rem;font-weight:700;color:#141414}.ds-etre:focus-visible{outline:3px solid #141414;outline-offset:6px}"
+    },
+    {
+      "name": "Tuile de mot",
+      "kind": "card",
+      "refersTo": "word-tile",
+      "description": "Un mot à la correction ; touchée, elle passe en faute.",
+      "html": "<div class=\"ds-tile\"><span><span class=\"ds-w\"><span style=\"color:#e8792b\">gi</span><span style=\"color:#2f8f83\">ro</span><span style=\"color:#7b4fb5\">flée</span></span><span class=\"ds-def\">Fleur jaune ou rouge très parfumée.</span></span><span class=\"ds-n\">8 l.</span></div>",
+      "css": ".ds-tile{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:14px 18px;width:300px;cursor:pointer}.ds-tile:hover{box-shadow:inset 0 0 0 2px #dad8d2}.ds-w{font-family:'Adwaita Sans','Liberation Sans',system-ui,sans-serif;font-size:26px;font-weight:600}.ds-def{display:block;font-size:.95rem;color:#57554f;margin-top:4px}.ds-n{color:#57554f;font-size:.9rem}"
+    },
+    {
+      "name": "Saisie au clavier",
+      "kind": "input",
+      "refersTo": null,
+      "description": "La réponse tapée : une ligne, le trait prend la couleur du jeu au focus.",
+      "html": "<input class=\"ds-rep\" value=\"chantons\">",
+      "css": ".ds-rep{font-family:'Adwaita Sans','Liberation Sans',system-ui,sans-serif;font-size:48px;font-weight:700;text-align:center;color:#141414;background:transparent;border:0;border-bottom:5px solid #dad8d2;outline:none;width:420px;caret-color:#ff5a1f}.ds-rep:focus{border-bottom-color:#ff5a1f}"
+    },
+    {
+      "name": "Sélecteur de langue",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "FR / PT en segment pilule.",
+      "html": "<div class=\"ds-seg\"><button class=\"ds-on\">FR</button><button>PT</button></div>",
+      "css": ".ds-seg{display:inline-flex;background:#fff;border-radius:999px;padding:4px;gap:2px}.ds-seg button{font-family: Jost, 'Adwaita Sans', system-ui, sans-serif;border:0;background:none;font-weight:600;font-size:.95rem;padding:7px 14px;border-radius:999px;color:#57554f;cursor:pointer}.ds-seg button.ds-on{background:#141414;color:#fff}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Les petits êtres",
+    "overview": "Chaque jeu est un compagnon : un petit être géométrique en aplat saturé, avec deux points noirs pour yeux, posé sur le trait noir d'un sol. La couleur vit dans les êtres ; le texte reste à l'encre. Pendant le jeu, l'interface se retire : le mot garde sa police et ses syllabes colorées.",
+    "keyCharacteristics": [
+      "Quatre êtres = quatre jeux, une couleur chacun, réutilisée comme couleur d'action dans tout le jeu choisi.",
+      "Le sol : un trait noir de 3 px sur lequel les êtres sont posés.",
+      "Fond gris clair neutre, feuilles blanches pour les contenus, encre presque noire.",
+      "Grotesque géométrique Jost, auto-hébergée ; les mots du jeu gardent leur police d'origine.",
+      "Icônes dessinées au trait de 2 px, jamais d'emoji dans l'interface."
+    ],
+    "rules": [
+      {
+        "name": "The Color Lives In The Creatures Rule",
+        "body": "Les aplats saturés appartiennent aux êtres et aux contrôles du jeu choisi ; le texte courant reste à l'encre.",
+        "section": "colors"
+      },
+      {
+        "name": "The Frozen Syllables Rule",
+        "body": "Les quatre couleurs de syllabes et la police des mots ne changent jamais.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Alarm Rule",
+        "body": "Le rouge #c8102e ne sert qu'à signaler une faute ou une destruction.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Eyebrow Rule",
+        "body": "Aucun petit texte en capitales espacées au-dessus d'un titre.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Creatures Rule",
+        "body": "Les êtres ne portent ni ombre, ni contour, ni dégradé : un aplat, deux yeux.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do donner à chaque nouveau jeu son propre être (forme exacte, aplat, deux yeux) et sa couleur, posé sur le sol de 3 px.",
+      "Do utiliser la couleur du jeu choisi (--g, et --g-on pour le texte dessus) pour tout état actif de son parcours.",
+      "Do dessiner les icônes en SVG au trait de 2 px, extrémités arrondies, 24 px.",
+      "Do garder les mots du jeu, la correction et les fiches dans la police des mots, avec les quatre couleurs de syllabes.",
+      "Do respecter prefers-reduced-motion : sauts, clignements et ondes s'arrêtent."
+    ],
+    "donts": [
+      "Don't changer la police des mots ni les couleurs des syllabes pendant le jeu.",
+      "Don't mettre d'emoji dans l'interface (les images repères des fiches de sons sont du contenu, pas des icônes).",
+      "Don't ajouter ombre, contour, dégradé ou texture aux êtres.",
+      "Don't afficher un compagnon ou une décoration pendant que le mot est visible.",
+      "Don't utiliser le rouge d'alerte pour autre chose qu'une faute ou une suppression."
+    ]
+  }
+}

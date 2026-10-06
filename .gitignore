@@ -2,3 +2,6 @@ data/
 __pycache__/
 *.pyc
 .DS_Store
+.impeccable/review/
+.impeccable/config.local.json
+.impeccable/questions/
